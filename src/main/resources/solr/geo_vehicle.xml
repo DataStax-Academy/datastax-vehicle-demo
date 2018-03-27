@@ -1,0 +1,26 @@
+<schema name="current_location" version="1.1">
+  <types>
+  	<fieldType class="org.apache.solr.schema.StrField" name="StrField"/>	
+	<fieldType name="text" class="solr.TextField">
+	  		<analyzer>      		  	      		
+	    		<tokenizer class="solr.StandardTokenizerFactory"/>																					
+	  		</analyzer>
+		</fieldType>
+	<fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
+	<fieldType name="location"  class="solr.LatLonType" subFieldSuffix="_coordinate"/>
+	<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+		
+   </types>
+   <fields>
+ 	<field name="vehicle"  type="StrField" indexed="true"  stored="true"/>
+ 	<field name="tile"  type="StrField" indexed="true"  stored="true" docValues="true"/>
+	<field name="date"  type="date" indexed="true"  stored="true" docValues="true"/>
+ 	<field name="day"  type="StrField" indexed="true"  stored="true"/>
+ 	<field name="speed"  type="tdouble" indexed="true"  stored="true"/>
+ 	<field name="temperature"  type="tdouble" indexed="true"  stored="true"/>
+ 	<field name="lat_long" type="location" indexed="true"  stored="true"  multiValued="false" />
+    <dynamicField name="*_coordinate"  type="tdouble" indexed="true"  stored="false"/>
+  </fields>
+  <defaultSearchField>vehicle</defaultSearchField>
+  <uniqueKey>(vehicle, day, date)</uniqueKey>  
+</schema>
