@@ -8,6 +8,9 @@
 		</fieldType>
 	<fieldType name="location"  class="solr.LatLonType" subFieldSuffix="_coordinate"/>
 	<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+	<fieldType name="rpt"
+                   class="solr.SpatialRecursivePrefixTreeFieldType"
+                   geo="true" />
 		
    </types>
  
@@ -17,8 +20,8 @@
     <field name="tile2"  type="text" indexed="true"  stored="true" docValues="true"/>
  	<field name="speed"  type="tdouble" indexed="true"  stored="true"/>
  	<field name="temperature"  type="tdouble" indexed="true"  stored="true"/> 	
-    <field name="lat_long" type="location" indexed="true"  stored="true"  multiValued="false" />
-    <dynamicField name="*_coordinate"  type="tdouble" indexed="true"  stored="false"/>
+    <field name="lat_long" type="rpt" indexed="true"  stored="true"  multiValued="false" />
+   
   </fields>
   <defaultSearchField>vehicle</defaultSearchField>
   <uniqueKey>vehicle</uniqueKey>  
