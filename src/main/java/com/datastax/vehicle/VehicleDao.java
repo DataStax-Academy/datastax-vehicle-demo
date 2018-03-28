@@ -5,19 +5,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.dse.DseCluster;
+import com.datastax.driver.dse.DseSession;
+import com.datastax.driver.dse.geometry.Point;
 import com.datastax.vehicle.model.Vehicle;
-import com.github.davidmoten.geo.GeoHash;
 import com.github.davidmoten.geo.LatLong;
-import com.github.davidmoten.grumpy.core.Position;
 
 public class VehicleDao {
 	
-	private Session session;
+	private DseSession session;
 	private static String keyspaceName = "datastax";
 	private static String vehicleTable = keyspaceName + ".vehicle";
 	private static String currentLocationTable = keyspaceName + ".current_location";
@@ -36,7 +35,7 @@ public class VehicleDao {
 
 	public VehicleDao(String[] contactPoints) {
 
-		Cluster cluster = Cluster.builder()
+		DseCluster cluster = DseCluster.builder()
 				.addContactPoints(contactPoints).build();
 		
 		this.session = cluster.connect();
@@ -50,10 +49,10 @@ public class VehicleDao {
 	public void insertVehicleData(Vehicle vehicle){
 
 		session.execute(insertVehicle.bind(vehicle.getVehicle(), dateFormatter.format(vehicle.getDate()), vehicle.getDate(), 
-				vehicle.getLatLong().getLat()+","+vehicle.getLatLong().getLon(), vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature()));
+				new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature()));
 		
 		session.execute(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(), 
-				vehicle.getLatLong().getLat()+","+vehicle.getLatLong().getLon(), vehicle.getDate(),vehicle.getSpeed(), vehicle.getTemperature()));
+				 new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getDate(),vehicle.getSpeed(), vehicle.getTemperature()));
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
