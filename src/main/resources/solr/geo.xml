@@ -8,14 +8,15 @@
 		</fieldType>
 	<fieldType name="location"  class="solr.LatLonType" subFieldSuffix="_coordinate"/>
 	<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
-	<fieldType name="rpt"
-                   class="solr.SpatialRecursivePrefixTreeFieldType"
-                   geo="true" />
+		<fieldType name="rpt" class="solr.SpatialRecursivePrefixTreeFieldType" 
+						spatialContextFactory="org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory"
+						distanceUnits="kilometers"
+	                   geo="true" />
 		
    </types>
  
   <fields>
- 	<field indexed="true" multiValued="false" name="vehicle" stored="true" type="StrField"/>
+ 	<field indexed="true" multiValued="false" name="vehicle" stored="true" type="StrField" docValues="true"/>
     <field name="tile1"  type="text" indexed="true"  stored="true" docValues="true"/>
     <field name="tile2"  type="text" indexed="true"  stored="true" docValues="true"/>
  	<field name="speed"  type="tdouble" indexed="true"  stored="true"/>

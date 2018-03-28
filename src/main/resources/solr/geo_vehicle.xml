@@ -9,13 +9,14 @@
 	<fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
 	<!-- <fieldType name="location"  class="solr.LatLonType" subFieldSuffix="_coordinate"/> -->
 	<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
-	<fieldType name="rpt"
-                   class="solr.SpatialRecursivePrefixTreeFieldType"
+	<fieldType name="rpt" class="solr.SpatialRecursivePrefixTreeFieldType" 
+					spatialContextFactory="org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory"					
+					distanceUnits="kilometers"
                    geo="true" />
    </types>
    
    <fields>
- 	<field name="vehicle"  type="StrField" indexed="true"  stored="true"/>
+ 	<field name="vehicle"  type="StrField" indexed="true"  stored="true" docValues="true"/>
  	<field name="tile"  type="StrField" indexed="true"  stored="true" docValues="true"/>
 	<field name="date"  type="date" indexed="true"  stored="true" docValues="true"/>
  	<field name="day"  type="StrField" indexed="true"  stored="true"/>
