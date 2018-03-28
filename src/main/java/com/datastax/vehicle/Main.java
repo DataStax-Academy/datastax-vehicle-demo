@@ -24,6 +24,9 @@ public class Main {
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	private static int TOTAL_VEHICLES = 10000;
 	private static int BATCH = 10000;
+	private double lat = 48.759231d;
+	private double lon = 11.3926907d;
+	
 	private static Map<String, LatLong> vehicleLocations = new HashMap<String, LatLong>();
 	private static Map<String, Double> vehicleSpeeds = new HashMap<String, Double>();
 	private static Map<String, Double> vehicleTemperatures = new HashMap<String, Double>();
@@ -33,6 +36,7 @@ public class Main {
 
 	public Main() {
 
+		
 		String contactPointsStr = PropertyHelper.getProperty("contactPoints", "localhost");
 		this.dao = new VehicleDao(contactPointsStr.split(","));
 		
@@ -67,7 +71,7 @@ public class Main {
 			
 			logger.info("Updating " + date.toString());			
 			updateVehicles(date, queue);
-			sleep(8);
+			sleep(10);
 		}
 
 		//ThreadUtils.shutdown(tasks, executor);
@@ -162,20 +166,22 @@ public class Main {
 	}
 
 	/**
-	 * Between 1 and -1
-	 * 
 	 * @return
 	 */
 	private double getRandomLng() {
-		return (Math.random() < .5) ? Math.random() : -1 * Math.random();
+				
+		double diff = Math.random() * 1;
+		
+		return (Math.random() < .5) ? this.lon + diff : this.lon - diff;
 	}
 
 	/**
-	 * Between 50 and 55
 	 */
 	private double getRandomLat() {
 
-		return Math.random() * 5 + 50;
+		double diff = Math.random() * 2;
+		
+		return (Math.random() < .5) ? this.lat + diff : this.lat - diff;
 	}
 
 	private void sleep(int ms) {
