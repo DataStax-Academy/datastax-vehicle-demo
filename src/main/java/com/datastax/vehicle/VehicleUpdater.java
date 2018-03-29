@@ -136,7 +136,7 @@ public class VehicleUpdater {
 	}
 
 	public void startVehicle(String vehicleId, DateTime date) {
-		logger.info("Starting Vehicle " + vehicleId + " at " +date.toString());
+		logger.info("Starting Vehicle " + vehicleId + " at " + date.toString());
 	}
 
 	public void stopVehicle(String vehicleId, DateTime date) {

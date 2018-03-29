@@ -12,8 +12,6 @@ import com.datastax.driver.dse.DseCluster;
 import com.datastax.driver.dse.DseSession;
 import com.datastax.driver.dse.geometry.Point;
 import com.datastax.vehicle.model.Vehicle;
-import com.datastax.vehicle.model.VehicleState;
-import com.datastax.vehicle.model.VehicleStateType;
 import com.github.davidmoten.geo.LatLong;
 
 
@@ -30,7 +28,6 @@ public class VehicleDao {
 	private static final String INSERT_INTO_VEHICLESTATE = "Insert into " + vehicleStateTable + "(vehicle, day, state_change_time, vehicle_state) values (?,?,?,?)" ;
 
 	private static final String QUERY_BY_VEHICLE = "select * from " + vehicleTable + " where vehicle = ? and day = ?";
-	private static final String QUERY_STATE_BY_VEHICLE = "select * from " + vehicleStateTable + " where vehicle = ? and day = ?";
 	
 	private PreparedStatement insertVehicle;
 	private PreparedStatement insertCurrentLocation;
@@ -53,7 +50,6 @@ public class VehicleDao {
 		this.insertVehicleState = session.prepare(INSERT_INTO_VEHICLESTATE);
 		
 		this.queryVehicle = session.prepare(QUERY_BY_VEHICLE);
-		this.queryVehicleState = session.prepare(QUERY_STATE_BY_VEHICLE);
 	}
 	
 	public void insertVehicleData(Vehicle vehicle){
@@ -66,8 +62,8 @@ public class VehicleDao {
 	}
 
 
-	public void insertVehicleState(String vehicleId, Date stateDate, VehicleStateType vehicleStateType) {
-		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(stateDate), stateDate, vehicleStateType.getTypeValue()));
+	public void insertVehicleStatus(String vehicleId, Date stateDate, String status) {
+		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(stateDate), stateDate, status));
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
@@ -125,7 +121,7 @@ public class VehicleDao {
 	public List<Vehicle> getVehiclesByTile(String tile) {
 		String cql = "select * from " + currentLocationTable + " where solr_query = '{\"q\": \"tile1: " + tile + "\"}' limit 1000";
 		ResultSet resultSet = session.execute(cql);
-		
+
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
 		List<Row> all = resultSet.all();
 		
@@ -148,16 +144,4 @@ public class VehicleDao {
 		return vehicleMovements;
 	}
 
-	public VehicleState getVehicleLatestStateByDate(String vehicleId, String dateString) {
-		ResultSet resultSet = session.execute(this.queryVehicleState.bind(vehicleId, dateString));
-		List<Row> all = resultSet.all();
-
-		Row latestRow = all.get(0);
-		VehicleStateType latestState = VehicleStateType.byTypeValue(latestRow.getString("vehicle_state"));
-		Date latestStateTime = latestRow.getTimestamp("state_change_time");
-		int stateChangeCount = all.size();
-
-		return new VehicleState(latestState, latestStateTime, stateChangeCount);
-	}
-	
 }
