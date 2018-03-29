@@ -24,19 +24,22 @@ public class Main {
 	private List<VehicleRunner> vehicles = new ArrayList<VehicleRunner>();
 
 	private VehicleDao dao;
-	private static DateTime date = DateTime.now().minusDays(1);
+	private static DateTime date;
 
 	public Main() {
 
 
 		String contactPointsStr = PropertyHelper.getProperty("contactPoints", "localhost");
 		this.dao = new VehicleDao(contactPointsStr.split(","));
-
+		
+		int noOfDays= Integer.parseInt(PropertyHelper.getProperty("noOfDays", "8"));		
 		int noOfThreads = Integer.parseInt(PropertyHelper.getProperty("noOfThreads", "5"));
 
 		ExecutorService executor = Executors.newFixedThreadPool(noOfThreads);
 		List<KillableRunner> tasks = new ArrayList<>();
 
+		date = DateTime.now().minusDays(noOfDays);
+		
 		//Start Executors
 		for (int i = 0; i < noOfThreads; i++) {
 
