@@ -10,6 +10,7 @@ create table if not exists current_location(
 	date timestamp,
 	speed double,
 	temperature double,
+	p_ map<text,double>
 ) WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 
 create table if not exists vehicle(
@@ -20,6 +21,7 @@ create table if not exists vehicle(
 	tile text,
 	speed double,
 	temperature double,
+    p_ map<text,double>
 	PRIMARY KEY ((vehicle,day), date)
 ) with clustering order by (date desc);
 

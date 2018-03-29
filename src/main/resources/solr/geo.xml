@@ -6,6 +6,7 @@
 	    		<tokenizer class="solr.StandardTokenizerFactory"/>																					
 	  		</analyzer>
 		</fieldType>
+	<fieldType class="org.apache.solr.schema.TrieDoubleField" name="TrieDoubleField"/>
 	<fieldType name="location"  class="solr.LatLonType" subFieldSuffix="_coordinate"/>
 	<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
 		<fieldType name="rpt" class="solr.SpatialRecursivePrefixTreeFieldType" 
@@ -22,7 +23,7 @@
  	<field name="speed"  type="tdouble" indexed="true"  stored="true"/>
  	<field name="temperature"  type="tdouble" indexed="true"  stored="true"/> 	
     <field name="lat_long" type="rpt" indexed="true"  stored="true"  multiValued="false" />
-   
+    <dynamicField docValues="true" indexed="true" multiValued="false" name="p_*" stored="true" type="TrieDoubleField"/>
   </fields>
   <defaultSearchField>vehicle</defaultSearchField>
   <uniqueKey>vehicle</uniqueKey>  
