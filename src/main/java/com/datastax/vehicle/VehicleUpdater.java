@@ -3,6 +3,8 @@ package com.datastax.vehicle;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.datastax.vehicle.model.EngineStatus;
+import com.datastax.vehicle.model.VehicleStatus;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,15 +24,12 @@ public class VehicleUpdater {
 	private static Map<String, Double> vehicleSpeeds = new HashMap<String, Double>();
 	private static Map<String, Double> vehicleTemperatures = new HashMap<String, Double>();
 
-	public VehicleUpdater(){
-		
+	private VehicleDao dao;
+
+	public VehicleUpdater(VehicleDao dao){
+		this.dao = dao;
 	}
-	
-	public VehicleUpdater(double lat, double lon) {
-		this.lat = lat;
-		this.lon = lon;				
-	}
-		
+
 	public Vehicle updateVehicle(String vehicleId, DateTime date){
 		
 		//Get the current values
@@ -134,11 +133,22 @@ public class VehicleUpdater {
 	}
 
 	public void startVehicle(String vehicleId, DateTime date) {
-		logger.info("Starting Vehicle " + vehicleId + " at " +date.toString());
-		
+		logger.info("Starting Vehicle " + vehicleId + " at " + date.toString());
+		dao.insertVehicleStatus(vehicleId, date, VehicleStatus.DRIVING.getStatusValue());
 	}
 
 	public void stopVehicle(String vehicleId, DateTime date) {
 		logger.info("Stopping Vehicle " + vehicleId + " at " +date.toString());
+		dao.insertVehicleStatus(vehicleId, date, VehicleStatus.STOPPED.getStatusValue());
+	}
+
+	public void startEngine(String vehicleId, DateTime date) {
+		logger.info("Starting engine of vehicle " + vehicleId + " at " +date.toString());
+		dao.insertVehicleStatus(vehicleId, date, EngineStatus.STARTED.getStatusValue());
+	}
+
+	public void stopEngine(String vehicleId, DateTime date) {
+		logger.info("Stopping engine of vehicle " + vehicleId + " at " +date.toString());
+		dao.insertVehicleStatus(vehicleId, date, EngineStatus.STOPPED.getStatusValue());
 	}
 }

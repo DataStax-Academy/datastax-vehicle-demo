@@ -49,7 +49,7 @@ public class Main {
 		timer.start();
 
 		logger.info("Creating Locations");
-		VehicleUpdater vehicleUpdater = new VehicleUpdater();
+		VehicleUpdater vehicleUpdater = new VehicleUpdater(dao);
 		vehicleUpdater.createStartValues(TOTAL_VEHICLES);
 
 		//Create all the vehicle threads and start them up.

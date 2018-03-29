@@ -13,6 +13,7 @@ import com.datastax.driver.dse.DseSession;
 import com.datastax.driver.dse.geometry.Point;
 import com.datastax.vehicle.model.Vehicle;
 import com.github.davidmoten.geo.LatLong;
+import org.joda.time.DateTime;
 
 
 public class VehicleDao {
@@ -64,8 +65,8 @@ public class VehicleDao {
 	}
 
 
-	public void insertVehicleStatus(String vehicleId, Date stateDate, String status) {
-		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(stateDate), stateDate, status));
+	public void insertVehicleStatus(String vehicleId, DateTime statusDate, String status) {
+		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(statusDate), statusDate, status));
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
