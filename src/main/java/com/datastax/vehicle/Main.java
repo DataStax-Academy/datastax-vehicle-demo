@@ -58,14 +58,16 @@ public class Main {
 
 		logger.info("Creating Locations");
 		createStartValues();
-		
+
+		//load historical data until current time, spacing each reading by 10 seconds
 		while (date.isBefore(DateTime.now())) {
 			date = date.plusSeconds(10);
 			
 			logger.info("Updating " + date.toString());			
 			updateVehicles(date, queue);			
 		}
-		
+
+		// load current data
 		while (true) {
 			date = DateTime.now();
 			
@@ -82,28 +84,21 @@ public class Main {
 
 		Vehicle vehicle;
 		for (int i = 0; i < BATCH; i++) {
-			String random = new Double(Math.random() * TOTAL_VEHICLES).intValue() + 1 + "";
+			String vehicleId = new Double(Math.random() * TOTAL_VEHICLES).intValue() + 1 + "";
 
-			//Get the current values
-			LatLong location = vehicleLocations.get(random);
-			Double speed = vehicleSpeeds.get(random);
-			Double temperature = vehicleTemperatures.get(random);
-			
-			
-			location = updateLocation(location);
-			speed = updateSpeed(speed);
-			temperature = updateTemperature(temperature);
-						
-			//update the values
-			vehicleLocations.put(random, location);
-			vehicleSpeeds.put(random, speed);
-			vehicleTemperatures.put(random, temperature);
-			
-			String tile1 = GeoHash.encodeHash(location, 4);
-			String tile2 = GeoHash.encodeHash(location, 7);
-			
-			vehicle = new Vehicle(random, date.toDate(), location, tile1, tile2, temperature, speed);
-			
+			/*
+			if (vehicle state is ON) {
+			   vehicle = updateVehicle(date, vehicleId);
+			 } else if (vehicle state is OFF && interval since last event > X mins && turned on less than Y times) {
+			   turn on vehicle
+			   vehicle = updateVehicle(date, vehicleId);
+			 } else {
+			   chck if it has to be turned on
+			 }
+			 */
+			vehicle = updateVehicle(date, vehicleId); //TODO move this
+
+
 			try {
 				queue.put(vehicle);
 			
@@ -111,6 +106,28 @@ public class Main {
 				e.printStackTrace();
 			}
 		}		
+	}
+
+	private Vehicle updateVehicle(DateTime date, String vehicleId) {
+		Vehicle vehicle;//Get the current values
+		LatLong location = vehicleLocations.get(vehicleId);
+		Double speed = vehicleSpeeds.get(vehicleId);
+		Double temperature = vehicleTemperatures.get(vehicleId);
+
+		location = updateLocation(location);
+		speed = updateSpeed(speed);
+		temperature = updateTemperature(temperature);
+
+		//update the values
+		vehicleLocations.put(vehicleId, location);
+		vehicleSpeeds.put(vehicleId, speed);
+		vehicleTemperatures.put(vehicleId, temperature);
+
+		String tile1 = GeoHash.encodeHash(location, 4);
+		String tile2 = GeoHash.encodeHash(location, 7);
+
+		vehicle = new Vehicle(vehicleId, date.toDate(), location, tile1, tile2, temperature, speed);
+		return vehicle;
 	}
 
 	private Double updateSpeed(double speed){

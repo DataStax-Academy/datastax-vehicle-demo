@@ -12,7 +12,10 @@ import com.datastax.driver.dse.DseCluster;
 import com.datastax.driver.dse.DseSession;
 import com.datastax.driver.dse.geometry.Point;
 import com.datastax.vehicle.model.Vehicle;
+import com.datastax.vehicle.model.VehicleState;
+import com.datastax.vehicle.model.VehicleStateType;
 import com.github.davidmoten.geo.LatLong;
+
 
 public class VehicleDao {
 	
@@ -20,16 +23,21 @@ public class VehicleDao {
 	private static String keyspaceName = "datastax";
 	private static String vehicleTable = keyspaceName + ".vehicle";
 	private static String currentLocationTable = keyspaceName + ".current_location";
+	private static String vehicleStateTable = keyspaceName + ".vehicle_state";
 
 	private static final String INSERT_INTO_VEHICLE = "Insert into " + vehicleTable + " (vehicle, day, date, lat_long, tile, speed, temperature) values (?,?,?,?,?,?,?);";
 	private static final String INSERT_INTO_CURRENTLOCATION = "Insert into " + currentLocationTable + "(vehicle, tile1, tile2, lat_long, date, speed, temperature) values (?,?,?,?,?,?,?)" ;
-	
+	private static final String INSERT_INTO_VEHICLESTATE = "Insert into " + vehicleStateTable + "(vehicle, day, state_change_time, vehicle_state) values (?,?,?,?)" ;
+
 	private static final String QUERY_BY_VEHICLE = "select * from " + vehicleTable + " where vehicle = ? and day = ?";
-	
+	private static final String QUERY_STATE_BY_VEHICLE = "select * from " + vehicleStateTable + " where vehicle = ? and day = ?";
 	
 	private PreparedStatement insertVehicle;
 	private PreparedStatement insertCurrentLocation;
+	private PreparedStatement insertVehicleState;
 	private PreparedStatement queryVehicle;
+	private PreparedStatement queryVehicleState;
+
 	
 	private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd"); 
 
@@ -42,8 +50,10 @@ public class VehicleDao {
 
 		this.insertVehicle = session.prepare(INSERT_INTO_VEHICLE);
 		this.insertCurrentLocation = session.prepare(INSERT_INTO_CURRENTLOCATION);
+		this.insertVehicleState = session.prepare(INSERT_INTO_VEHICLESTATE);
 		
 		this.queryVehicle = session.prepare(QUERY_BY_VEHICLE);
+		this.queryVehicleState = session.prepare(QUERY_STATE_BY_VEHICLE);
 	}
 	
 	public void insertVehicleData(Vehicle vehicle){
@@ -53,6 +63,11 @@ public class VehicleDao {
 		
 		session.execute(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(), 
 				 new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getDate(),vehicle.getSpeed(), vehicle.getTemperature()));
+	}
+
+
+	public void insertVehicleState(String vehicleId, Date stateDate, VehicleStateType vehicleStateType) {
+		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(stateDate), stateDate, vehicleStateType.getTypeValue()));
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
@@ -132,6 +147,17 @@ public class VehicleDao {
 		
 		return vehicleMovements;
 	}
-	
+
+	public VehicleState getVehicleLatestStateByDate(String vehicleId, String dateString) {
+		ResultSet resultSet = session.execute(this.queryVehicleState.bind(vehicleId, dateString));
+		List<Row> all = resultSet.all();
+
+		Row latestRow = all.get(0);
+		VehicleStateType latestState = VehicleStateType.byTypeValue(latestRow.getString("vehicle_state"));
+		Date latestStateTime = latestRow.getTimestamp("state_change_time");
+		int stateChangeCount = all.size();
+
+		return new VehicleState(latestState, latestStateTime, stateChangeCount);
+	}
 	
 }
