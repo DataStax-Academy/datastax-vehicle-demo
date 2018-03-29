@@ -21,7 +21,7 @@ create table if not exists vehicle(
 	tile text,
 	speed double,
 	temperature double,
-    p_ map<text,double>
+    p_ map<text,double>,
 	PRIMARY KEY ((vehicle,day), date)
 ) with clustering order by (date desc);
 
