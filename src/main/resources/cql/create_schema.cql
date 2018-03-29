@@ -1,6 +1,6 @@
 create keyspace if not exists datastax WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1' };
 
-use datastax; 
+use datastax;  
  
 create table if not exists current_location(
 	vehicle text PRIMARY KEY,
