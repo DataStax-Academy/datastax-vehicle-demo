@@ -25,7 +25,7 @@ create table if not exists vehicle(
 	PRIMARY KEY ((vehicle,day), date)
 ) with clustering order by (date desc);
 
-create table if not exists vehicle_state (
+create table if not exists vehicle_status (
     vehicle text,
     day text,
     state_change_time timestamp,
@@ -36,5 +36,5 @@ create table if not exists vehicle_state (
 
 truncate current_location;
 truncate vehicle;
-truncate vehicle_state;
+truncate vehicle_status;
 

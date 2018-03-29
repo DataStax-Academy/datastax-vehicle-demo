@@ -62,7 +62,7 @@ public class VehicleRunner{
 				queue.put(vehicleUpdater.updateVehicle(vehicleId, date));
 
 				if (engineStatus == EngineStatus.STARTED) {
-					if (Math.random() < 0.07) {	// in 7% of the times, stop the engine
+					if (Math.random() < 0.001) {	// in 0.1% of the times, stop the engine
 						engineStatus = EngineStatus.STOPPED;
 						vehicleUpdater.stopEngine(vehicleId, date);
 						stopEngineUntil = date.plusSeconds(new Double(Math.random() * 10 + 1).intValue());

@@ -28,32 +28,32 @@ If you want to also query on where vehicles where at a certain time.
 	
 To continuously update the locations of the vehicles run 
 	
-	mvn clean compile exec:java -Dexec.mainClass="com.datastax.taxi.Main" -DcontactPoints=localhost
+	mvn clean compile exec:java -Dexec.mainClass="com.datastax.vehicle.Main" -DcontactPoints=localhost
 	
 To start the web server, in another terminal run 
 
 	mvn jetty:run
 	
-To find all movements of a vehicle use http://localhost:8080/datastax-taxi-app/rest/getmovements/{vehicle}/{date} e.g.
+To find all movements of a vehicle use http://localhost:8080/datastax-vehicle-app/rest/getmovements/{vehicle}/{date} e.g.
 
-	http://localhost:8080/datastax-taxi-app/rest/getmovements/1/20170412
+	http://localhost:8080/datastax-vehicle-app/rest/getmovements/1/20170412
 
 Or
 
 	select * from vehicle where vehicle = '1' and day='20170412';
 
-To find all vehicle movement, use the rest command http://localhost:8080/datastax-taxi-app/rest/getvehicles/{tile} e.g.
+To find all vehicle movement, use the rest command http://localhost:8080/datastax-vehicle-app/rest/getvehicles/{tile} e.g.
 
-	http://localhost:8080/datastax-taxi-app/rest/getvehicles/gcrf
+	http://localhost:8080/datastax-vehicle-app/rest/getvehicles/gcrf
 
 or 
 
 	CQL - select * from current_location where solr_query = '{"q": "tile1:gcrf"}' limit 1000;
 
 
-To find all vehicles within a certain distance of a latitude and longitude, http://localhost:8080/datastax-taxi-app/rest/search/{lat}/{long}/{distance}
+To find all vehicles within a certain distance of a latitude and longitude, http://localhost:8080/datastax-vehicle-app/rest/search/{lat}/{long}/{distance}
 
-	http://localhost:8080/datastax-taxi-app/rest/search/52.53956077140064/-0.20225833920426117/5
+	http://localhost:8080/datastax-vehicle-app/rest/search/52.53956077140064/-0.20225833920426117/5
 	
 Or
 

@@ -22,11 +22,11 @@ public class VehicleDao {
 	private static String keyspaceName = "datastax";
 	private static String vehicleTable = keyspaceName + ".vehicle";
 	private static String currentLocationTable = keyspaceName + ".current_location";
-	private static String vehicleStateTable = keyspaceName + ".vehicle_state";
+	private static String vehicleStatusTable = keyspaceName + ".vehicle_status";
 
 	private static final String INSERT_INTO_VEHICLE = "Insert into " + vehicleTable + " (vehicle, day, date, lat_long, tile, speed, temperature, p_) values (?,?,?,?,?,?,?,?);";
 	private static final String INSERT_INTO_CURRENTLOCATION = "Insert into " + currentLocationTable + "(vehicle, tile1, tile2, lat_long, date, speed, temperature, p_) values (?,?,?,?,?,?,?,?)" ;
-	private static final String INSERT_INTO_VEHICLESTATE = "Insert into " + vehicleStateTable + "(vehicle, day, state_change_time, vehicle_state) values (?,?,?,?)" ;
+	private static final String INSERT_INTO_VEHICLESTATUS = "Insert into " + vehicleStatusTable + "(vehicle, day, state_change_time, vehicle_state) values (?,?,?,?)" ;
 
 	private static final String QUERY_BY_VEHICLE = "select * from " + vehicleTable + " where vehicle = ? and day = ?";
 	
@@ -34,7 +34,6 @@ public class VehicleDao {
 	private PreparedStatement insertCurrentLocation;
 	private PreparedStatement insertVehicleState;
 	private PreparedStatement queryVehicle;
-	private PreparedStatement queryVehicleState;
 
 	
 	private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd"); 
@@ -48,7 +47,7 @@ public class VehicleDao {
 
 		this.insertVehicle = session.prepare(INSERT_INTO_VEHICLE);
 		this.insertCurrentLocation = session.prepare(INSERT_INTO_CURRENTLOCATION);
-		this.insertVehicleState = session.prepare(INSERT_INTO_VEHICLESTATE);
+		this.insertVehicleState = session.prepare(INSERT_INTO_VEHICLESTATUS);
 		
 		this.queryVehicle = session.prepare(QUERY_BY_VEHICLE);
 	}
@@ -66,7 +65,7 @@ public class VehicleDao {
 
 
 	public void insertVehicleStatus(String vehicleId, DateTime statusDate, String status) {
-		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(statusDate), statusDate, status));
+		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(statusDate.toDate()), statusDate.toDate(), status));
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
