@@ -25,14 +25,14 @@ public class VehicleDao {
 	private static String currentLocationTable = keyspaceName + ".current_location";
 	private static String vehicleStateTable = keyspaceName + ".vehicle_state";
 
-	private static final String INSERT_INTO_VEHICLE = "Insert into " + vehicleTable + " (vehicle, day, date, lat_long, tile, speed, temperature) values (?,?,?,?,?,?,?);";
-	private static final String INSERT_INTO_CURRENTLOCATION = "Insert into " + currentLocationTable + "(vehicle, tile1, tile2, lat_long, date, speed, temperature) values (?,?,?,?,?,?,?)" ;
+	private static final String INSERT_INTO_VEHICLE = "Insert into " + vehicleTable + " (vehicle, day, date, lat_long, tile, speed, temperature, p_) values (?,?,?,?,?,?,?,?);";
+	private static final String INSERT_INTO_CURRENTLOCATION = "Insert into " + currentLocationTable + "(vehicle, tile1, tile2, lat_long, date, speed, temperature, p_) values (?,?,?,?,?,?,?,?)" ;
 	private static final String INSERT_INTO_VEHICLESTATE = "Insert into " + vehicleStateTable + "(vehicle, day, state_change_time, vehicle_state) values (?,?,?,?)" ;
 
 	private static final String QUERY_BY_VEHICLE = "select * from " + vehicleTable + " where vehicle = ? and day = ?";
 	private static final String QUERY_STATE_BY_VEHICLE = "select * from " + vehicleStateTable + " where vehicle = ? and day = ?";
 	
-	private PreparedStatement insertVehicle;
+	private PreparedStatement insertVehicle;	
 	private PreparedStatement insertCurrentLocation;
 	private PreparedStatement insertVehicleState;
 	private PreparedStatement queryVehicle;
@@ -59,10 +59,12 @@ public class VehicleDao {
 	public void insertVehicleData(Vehicle vehicle){
 
 		session.execute(insertVehicle.bind(vehicle.getVehicle(), dateFormatter.format(vehicle.getDate()), vehicle.getDate(), 
-				new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature()));
+				new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getTile2(), vehicle.getSpeed(), 
+				vehicle.getTemperature(), vehicle.getProperties()));
 		
 		session.execute(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(), 
-				 new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getDate(),vehicle.getSpeed(), vehicle.getTemperature()));
+				 new Point(vehicle.getLatLong().getLat(),vehicle.getLatLong().getLon()), vehicle.getDate(),vehicle.getSpeed(), 
+				 vehicle.getTemperature(), vehicle.getProperties()));
 	}
 
 

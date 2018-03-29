@@ -51,7 +51,13 @@ public class VehicleUpdater {
 		String tile1 = GeoHash.encodeHash(location, 4);
 		String tile2 = GeoHash.encodeHash(location, 7);
 		
+		HashMap<String, Double> properties = new HashMap<String, Double>(3);
+		properties.put("p_Oilpressure", Math.random()*80 + 50);
+		properties.put("p_Humidity", Math.random()*80 + 20);
+		properties.put("p_Torque", Math.random()*180);
+		
 		Vehicle vehicle = new Vehicle(vehicleId, date.toDate(), location, tile1, tile2, temperature, speed);
+		vehicle.setProperties(properties);
 		
 		return vehicle;
 	}
@@ -127,16 +133,9 @@ public class VehicleUpdater {
 		return (Math.random() < .5) ? this.lat + diff : this.lat - diff;
 	}
 
-	private void sleep(int ms) {
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void startVehicle(String vehicleId, DateTime date) {
 		logger.info("Starting Vehicle " + vehicleId + " at " +date.toString());
+		
 	}
 
 	public void stopVehicle(String vehicleId, DateTime date) {

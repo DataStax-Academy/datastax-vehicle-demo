@@ -1,6 +1,8 @@
 package com.datastax.vehicle.model;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.github.davidmoten.geo.LatLong;
 
@@ -12,6 +14,7 @@ public class Vehicle {
 	private String tile2;
 	private double temperature;
 	private double speed;
+	private Map<String, Double> p_ = new HashMap<String, Double>();
 
 	public Vehicle(String vehicle, Date date, LatLong latLong, String tile, String tile2, double temperature,
 			double speed) {
@@ -60,10 +63,18 @@ public class Vehicle {
 	public void setSpeed(double speed) {
 		this.speed = speed;
 	}
-	
+
+	public Map<String, Double> getProperties() {
+		return p_;
+	}
+
+	public void setProperties(Map<String, Double> p_) {
+		this.p_ = p_;
+	}
+
 	@Override
 	public String toString() {
-		return "Vehicle [vehicle=" + vehicle + ", date=" + date + ", latLong=" + latLong + ", tile=" + tile
-				+ ", tile2=" + tile2 + "]";
+		return "Vehicle [vehicle=" + vehicle + ", date=" + date + ", latLong=" + latLong + ", tile=" + tile + ", tile2="
+				+ tile2 + ", temperature=" + temperature + ", speed=" + speed + ", properties=" + p_ + "]";
 	}
 }
