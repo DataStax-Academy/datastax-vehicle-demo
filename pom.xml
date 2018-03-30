@@ -79,7 +79,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>taxi-app</finalName>
+		<finalName>Vehicle-app</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
