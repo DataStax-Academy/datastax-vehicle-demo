@@ -4,7 +4,9 @@ import java.util.concurrent.BlockingQueue;
 
 import org.joda.time.DateTime;
 
+import com.datastax.vehicle.model.EngineStatus;
 import com.datastax.vehicle.model.Vehicle;
+import com.datastax.vehicle.model.VehicleStatus;
 
 public class VehicleRunner{
 
@@ -13,10 +15,12 @@ public class VehicleRunner{
 	private String vehicleId;
 	private DateTime driveUntil;
 	private DateTime sleepUntil;
+	private DateTime stopEngineUntil;
 	
 	
-	public enum Status { STARTING, STOPPING, STOPPED, DRIVING};
-	private Status status;
+	//public enum Status { STARTING, STOPPING, STOPPED, DRIVING};
+	private VehicleStatus vehicleStatus;
+	private EngineStatus engineStatus;
 
 	public VehicleRunner(String vehicleId, VehicleUpdater vehicleUpdater, BlockingQueue<Vehicle> queue, DateTime date) {
 		this.vehicleId = vehicleId;
@@ -24,47 +28,69 @@ public class VehicleRunner{
 		this.vehicleUpdater = vehicleUpdater;
 		
 		if (Math.random() > .8){
-			status = Status.STOPPED;
+			vehicleStatus = VehicleStatus.STOPPED;
+			engineStatus = EngineStatus.STOPPED;
 			int minutesToSleep = new Double(Math.random() * 720).intValue();			
 			sleepUntil = date.plusMinutes(minutesToSleep);
 		}else{
 			int minutesToDriveAround = new Double(Math.random() * 110).intValue() + 10;
 			driveUntil = date.plusMinutes(minutesToDriveAround);
-			status = Status.DRIVING;
+			vehicleStatus = VehicleStatus.DRIVING;
+			engineStatus = EngineStatus.STARTED;
 			vehicleUpdater.startVehicle(vehicleId, date);
 		}
 	}
 	
 	public void nextStep(DateTime date) throws Exception {
 		
-		if (status.equals(Status.STOPPED)){
+		if (vehicleStatus.equals(VehicleStatus.STOPPED)){
 			if (!date.isBefore(sleepUntil)){
-				status = Status.STARTING;
+				vehicleStatus = VehicleStatus.STARTING;
 			}			
 		}
-		
-		if (status.equals(Status.STOPPING)){
+
+		if (vehicleStatus.equals(VehicleStatus.STARTING)){
+			int minutesToDriveAround = new Double(Math.random() * 110).intValue() + 10;
+			driveUntil = date.plusMinutes(minutesToDriveAround);
+			vehicleStatus = VehicleStatus.DRIVING;
+			engineStatus = EngineStatus.STARTED;
+			vehicleUpdater.startVehicle(vehicleId, date);
+		}
+
+		if (vehicleStatus.equals(VehicleStatus.DRIVING)){
+			if (date.isBefore(driveUntil)) {
+				queue.put(vehicleUpdater.updateVehicle(vehicleId, date));
+
+				if (engineStatus == EngineStatus.STARTED) {
+					if (Math.random() < 0.001) {	// in 0.1% of the times, stop the engine
+						engineStatus = EngineStatus.STOPPED;
+						vehicleUpdater.stopEngine(vehicleId, date);
+						stopEngineUntil = date.plusSeconds(new Double(Math.random() * 10 + 1).intValue());
+					}
+					// otherwise leave the engine running as normal and do nothing
+				} else {
+					if (!date.isBefore(stopEngineUntil)) {
+						engineStatus = EngineStatus.STARTED;
+						vehicleUpdater.startEngine(vehicleId, date);
+						stopEngineUntil = null;
+					}
+				}
+
+			} else {
+				vehicleStatus = VehicleStatus.STOPPING;
+			}
+		}
+
+		if (vehicleStatus.equals(VehicleStatus.STOPPING)){
 			vehicleUpdater.stopVehicle(vehicleId, date);
-			
+
 			int minutesToSleep = new Double(Math.random() * 720).intValue();
 			
 			sleepUntil = date.plusMinutes(minutesToSleep);
-			status = Status.STOPPED;
+			vehicleStatus = VehicleStatus.STOPPED;
+			engineStatus = EngineStatus.STOPPED;
+		}
 
-		}
-		if (status.equals(Status.DRIVING)){
-			if (date.isBefore(driveUntil)){
-				queue.put(vehicleUpdater.updateVehicle(vehicleId, date));
-			}else{
-				status = Status.STOPPING;
-			}
-		}
-		
-		if (status.equals(Status.STARTING)){
-			int minutesToDriveAround = new Double(Math.random() * 110).intValue() + 10;
-			driveUntil = date.plusMinutes(minutesToDriveAround);
-			status = Status.DRIVING;
-			vehicleUpdater.startVehicle(vehicleId, date);
-		}		
+
 	}
 }
