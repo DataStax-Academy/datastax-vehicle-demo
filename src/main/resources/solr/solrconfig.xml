@@ -205,7 +205,7 @@
                    triggering a new commit. 
       -->
        <autoSoftCommit> 
-         <maxTime>1000</maxTime> 
+         <maxTime>8000</maxTime> 
        </autoSoftCommit>
 
     <!-- Update Related Event Listeners

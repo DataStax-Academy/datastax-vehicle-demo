@@ -2,11 +2,11 @@ package com.datastax.vehicle;
 
 import java.util.concurrent.BlockingQueue;
 
-import com.datastax.vehicle.model.EngineStatus;
-import com.datastax.vehicle.model.VehicleStatus;
 import org.joda.time.DateTime;
 
+import com.datastax.vehicle.model.EngineStatus;
 import com.datastax.vehicle.model.Vehicle;
+import com.datastax.vehicle.model.VehicleStatus;
 
 public class VehicleRunner{
 
