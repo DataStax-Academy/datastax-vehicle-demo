@@ -91,11 +91,9 @@ public class VehicleDao {
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
 		ResultSet resultSet = session.execute(this.queryVehicle.bind(vehicleId, dateString));
-
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
-		List<Row> all = resultSet.all();
 
-		for (Row row : all) {
+		for (Row row : resultSet) {
 			Date date = row.getTimestamp("date");
 			Point lat_long = (Point) row.getObject("lat_long");
 			String tile = row.getString("tile");
@@ -120,9 +118,8 @@ public class VehicleDao {
 		ResultSet resultSet = session.execute(cql);
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
-		List<Row> all = resultSet.all();
 
-		for (Row row : all) {
+		for (Row row : resultSet) {
 			Date date = row.getTimestamp("date");
 			String vehicleId = row.getString("vehicle");
 			Point lat_long = (Point) row.getObject("lat_long");
@@ -146,9 +143,8 @@ public class VehicleDao {
 		ResultSet resultSet = session.execute(cql);
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
-		List<Row> all = resultSet.all();
 
-		for (Row row : all) {
+		for (Row row : resultSet) {
 			Date date = row.getTimestamp("date");
 			String vehicleId = row.getString("vehicle");
 			Point lat_long = (Point) row.getObject("lat_long");
@@ -213,22 +209,17 @@ public class VehicleDao {
 		ImmutableList<ListenableFuture<ResultSet>> inCompletionOrder = Futures.inCompletionOrder(futures);
 
 		for (ListenableFuture<ResultSet> future : futures) {
-
 			ResultSet rs = null;
 			try {
 				rs = future.get();
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
-
-			List<Row> all = rs.all();
-
-			if (all.isEmpty()) {
+			if (rs == null) {
 				continue;
 			}
 
-			for (Row row : all) {
-
+			for (Row row : rs) {
 				Date date = row.getTimestamp("date");
 				String vehicleId = row.getString("vehicle");
 				Point lat_long = (Point) row.getObject("lat_long");
