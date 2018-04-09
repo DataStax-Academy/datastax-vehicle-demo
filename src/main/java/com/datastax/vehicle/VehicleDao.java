@@ -50,11 +50,18 @@ public class VehicleDao {
 	private static final String QUERY_BY_VEHICLE_DATE = "select * from " + vehicleTable
 			+ " where vehicle = ? and day = ? and date < ? limit 1";
 
+	private static final String SOLR_QUERY_CURRENT_LOCATION  = "select * from " + currentLocationTable
+			+ " where solr_query = ?  limit 1000";
+
+	private static final String SOLR_QUERY_VEHICLE = "SELECT * FROM " + vehicleTable + " where solr_query = ?";
+
 	private PreparedStatement insertVehicle;
 	private PreparedStatement insertCurrentLocation;
 	private PreparedStatement insertVehicleState;
 	private PreparedStatement queryVehicle;
 	private PreparedStatement queryVehicleDate;
+	private PreparedStatement queryCurrentLocation;
+	private PreparedStatement queryVehicleSolr;
 
 	private DateFormat solrDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:sss'Z'");
 	private DateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
@@ -71,6 +78,8 @@ public class VehicleDao {
 
 		this.queryVehicle = session.prepare(QUERY_BY_VEHICLE);
 		this.queryVehicleDate = session.prepare(QUERY_BY_VEHICLE_DATE);
+		this.queryCurrentLocation = session.prepare(SOLR_QUERY_CURRENT_LOCATION);
+		this.queryVehicleSolr = session.prepare(SOLR_QUERY_VEHICLE);
 	}
 
 	public void insertVehicleData(Vehicle vehicle) {
@@ -111,11 +120,9 @@ public class VehicleDao {
 	}
 
 	public List<Vehicle> searchVehiclesByLonLatAndDistance(int distance, LatLong latLong) {
-
-		String cql = "select * from " + currentLocationTable
-				+ " where solr_query = '{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=" + latLong.getLat()
-				+ "," + latLong.getLon() + " d=" + distance + "}\"}'  limit 1000";
-		ResultSet resultSet = session.execute(cql);
+		String solr_query = "{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=" + latLong.getLat()
+				+ "," + latLong.getLon() + " d=" + distance + "}\"}";
+		ResultSet resultSet = session.execute(queryCurrentLocation.bind(solr_query));
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
 
@@ -138,9 +145,8 @@ public class VehicleDao {
 	}
 
 	public List<Vehicle> getVehiclesByTile(String tile) {
-		String cql = "select * from " + currentLocationTable + " where solr_query = '{\"q\": \"tile1: " + tile
-				+ "\"}' limit 1000";
-		ResultSet resultSet = session.execute(cql);
+		String solr_query = "{\"q\": \"tile1: " + tile + "\"}";
+		ResultSet resultSet = session.execute(queryCurrentLocation.bind(solr_query));
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
 
@@ -164,14 +170,12 @@ public class VehicleDao {
 	}
 
 	public List<Vehicle> getVehiclesByAreaTimeLastPosition(DateTime from, DateTime to) {
-		
-		String cql = "SELECT * FROM datastax.vehicle where solr_query=" + "'{\"q\":\"*:*\"," + "\"fq\":\"date:["
+
+		String solr_query = "'{\"q\":\"*:*\"," + "\"fq\":\"date:["
 				+ solrDateFormatter.format(from.toDate()) + " TO " + solrDateFormatter.format(to.toDate()) + "] "
-				+ "AND lat_long:\\\"isWithin(POLYGON((48.736989 10.271339, 48.067576 11.609030, 48.774243 12.913120, 49.595759 11.123788, 48.736989 10.271339)))\\\"\",\"facet\":{\"field\":\"vehicle\", \"limit\":\"5000000\"}}'";
+				+ "AND lat_long:\\\"isWithin(POLYGON((48.736989 10.271339, 48.067576 11.609030, 48.774243 12.913120, 49.595759 11.123788, 48.736989 10.271339)))\\\"\",\"facet\":{\"field\":\"vehicle\", \"limit\":\"5000000\"}}";
 
-		logger.info(cql);
-
-		ResultSet resultSet = session.execute(cql);
+		ResultSet resultSet = session.execute(queryVehicleSolr.bind(solr_query));
 
 		String result = resultSet.one().getString(0);
 		ObjectMapper mapper = new ObjectMapper();
@@ -190,17 +194,15 @@ public class VehicleDao {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		List<ResultSetFuture> futures = new ArrayList<ResultSetFuture>();
 
 		for (String vehicle : vehicles) {
-
-			BoundStatement boundStatement = this.queryVehicleDate.bind(vehicle, dateFormatter.format(to.toDate()),
-					to.toDate());
-
+			Date date = to.toDate();
+			BoundStatement boundStatement = this.queryVehicleDate.bind(vehicle, dateFormatter.format(date),
+					date);
 			futures.add(session.executeAsync(boundStatement));
 		}
 
@@ -224,7 +226,7 @@ public class VehicleDao {
 				String vehicleId = row.getString("vehicle");
 				Point lat_long = (Point) row.getObject("lat_long");
 				String tile = row.getString("tile");
-				
+
 				Double temperature = row.getDouble("temperature");
 				Double speed = row.getDouble("speed");
 				Map<String, Double> map = row.getMap("p_", String.class, Double.class);
