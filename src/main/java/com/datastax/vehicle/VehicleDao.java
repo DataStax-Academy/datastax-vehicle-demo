@@ -15,6 +15,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.demo.SessionLimiter;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -50,7 +51,7 @@ public class VehicleDao {
 	private static final String QUERY_BY_VEHICLE_DATE = "select * from " + vehicleTable
 			+ " where vehicle = ? and day = ? and date < ? limit 1";
 
-	private static final String SOLR_QUERY_CURRENT_LOCATION  = "select * from " + currentLocationTable
+	private static final String SOLR_QUERY_CURRENT_LOCATION = "select * from " + currentLocationTable
 			+ " where solr_query = ?  limit 1000";
 
 	private static final String SOLR_QUERY_VEHICLE = "SELECT * FROM " + vehicleTable + " where solr_query = ?";
@@ -66,11 +67,14 @@ public class VehicleDao {
 	private DateFormat solrDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:sss'Z'");
 	private DateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
 
+	private SessionLimiter limiter;
+
 	public VehicleDao(String[] contactPoints) {
 
 		DseCluster cluster = DseCluster.builder().addContactPoints(contactPoints).build();
 
 		this.session = cluster.connect();
+		this.limiter = new SessionLimiter(session);
 
 		this.insertVehicle = session.prepare(INSERT_INTO_VEHICLE);
 		this.insertCurrentLocation = session.prepare(INSERT_INTO_CURRENTLOCATION);
@@ -83,19 +87,26 @@ public class VehicleDao {
 	}
 
 	public void insertVehicleData(Vehicle vehicle) {
+		try {
+			limiter.executeAsync(insertVehicle.bind(vehicle.getVehicle(), dateFormatter.format(vehicle.getDate()),
+					vehicle.getDate(), new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()),
+					vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
 
-		session.execute(insertVehicle.bind(vehicle.getVehicle(), dateFormatter.format(vehicle.getDate()),
-				vehicle.getDate(), new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()),
-				vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
-
-		session.execute(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(),
-				new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()), vehicle.getDate(),
-				vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
+			limiter.executeAsync(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(),
+					new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()), vehicle.getDate(),
+					vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void insertVehicleStatus(String vehicleId, DateTime statusDate, String status) {
-		session.execute(insertVehicleState.bind(vehicleId, dateFormatter.format(statusDate.toDate()),
-				statusDate.toDate(), status));
+		try {
+			limiter.executeAsync(insertVehicleState.bind(vehicleId, dateFormatter.format(statusDate.toDate()),
+					statusDate.toDate(), status));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<Vehicle> getVehicleMovements(String vehicleId, String dateString) {
@@ -120,8 +131,8 @@ public class VehicleDao {
 	}
 
 	public List<Vehicle> searchVehiclesByLonLatAndDistance(int distance, LatLong latLong) {
-		String solr_query = "{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=" + latLong.getLat()
-				+ "," + latLong.getLon() + " d=" + distance + "}\"}";
+		String solr_query = "{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=" + latLong.getLat() + ","
+				+ latLong.getLon() + " d=" + distance + "}\"}";
 		ResultSet resultSet = session.execute(queryCurrentLocation.bind(solr_query));
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
@@ -171,8 +182,8 @@ public class VehicleDao {
 
 	public List<Vehicle> getVehiclesByAreaTimeLastPosition(DateTime from, DateTime to) {
 
-		String solr_query = "'{\"q\":\"*:*\"," + "\"fq\":\"date:["
-				+ solrDateFormatter.format(from.toDate()) + " TO " + solrDateFormatter.format(to.toDate()) + "] "
+		String solr_query = "'{\"q\":\"*:*\"," + "\"fq\":\"date:[" + solrDateFormatter.format(from.toDate()) + " TO "
+				+ solrDateFormatter.format(to.toDate()) + "] "
 				+ "AND lat_long:\\\"isWithin(POLYGON((48.736989 10.271339, 48.067576 11.609030, 48.774243 12.913120, 49.595759 11.123788, 48.736989 10.271339)))\\\"\",\"facet\":{\"field\":\"vehicle\", \"limit\":\"5000000\"}}";
 
 		ResultSet resultSet = session.execute(queryVehicleSolr.bind(solr_query));
@@ -183,7 +194,8 @@ public class VehicleDao {
 		List<String> vehicles = new ArrayList<String>();
 
 		try {
-			Map<String, Object> map = mapper.readValue(result, new TypeReference<Map<String, Object>>() {});
+			Map<String, Object> map = mapper.readValue(result, new TypeReference<Map<String, Object>>() {
+			});
 
 			Map<String, Integer> facets = (Map<String, Integer>) map.get("vehicle");
 
@@ -201,8 +213,7 @@ public class VehicleDao {
 
 		for (String vehicle : vehicles) {
 			Date date = to.toDate();
-			BoundStatement boundStatement = this.queryVehicleDate.bind(vehicle, dateFormatter.format(date),
-					date);
+			BoundStatement boundStatement = this.queryVehicleDate.bind(vehicle, dateFormatter.format(date), date);
 			futures.add(session.executeAsync(boundStatement));
 		}
 
