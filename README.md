@@ -1,7 +1,7 @@
 Vehicle Tracking App
 ========================
 
-This demo traces moving vehicles as they pass through geohash tiles. It also keeps track of a vehicle movements on a day to day basis. Similar to a vessel tracking or taxi application.  
+This demo traces moving vehicles as they pass through geohash tiles. It also keeps track of a vehicle movements on a day to day basis. Similar to a vessel tracking or taxi application.
 
 The application 
 
@@ -14,23 +14,15 @@ The application
 To specify contact points use the contactPoints command line parameter e.g. '-DcontactPoints=192.168.25.100,192.168.25.101'
 The contact points can take mulitple points in the IP,IP,IP (no spaces).
  
-To create the schema, run the following
+To create the schema & search indices ([JTS need to be installed](https://docs.datastax.com/en/dse/5.1/dse-dev/datastax_enterprise/search/queriesSpatial.html)), run the following:
 
 	mvn clean compile exec:java -Dexec.mainClass="com.datastax.demo.SchemaSetup" -DcontactPoints=localhost
 	
-To create the solr core, run 
-
-	dsetool create_core datastax.current_location reindex=true schema=src/main/resources/solr/geo.xml solrconfig=src/main/resources/solr/solrconfig.xml
-
-If you want to also query on where vehicles where at a certain time. 
-
-	dsetool create_core datastax.vehicle reindex=true schema=src/main/resources/solr/geo_vehicle.xml solrconfig=src/main/resources/solr/solrconfig.xml	
-	
-To continuously update the locations of the vehicles run 
+To continuously update the locations of the vehicles run:
 	
 	mvn clean compile exec:java -Dexec.mainClass="com.datastax.vehicle.Main" -DcontactPoints=localhost
 	
-To start the web server, in another terminal run 
+To start the web server, in another terminal run:
 
 	mvn jetty:run
 	
