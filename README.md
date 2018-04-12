@@ -38,16 +38,16 @@ To find all vehicle movement, use the rest command http://localhost:8080/rest/ge
 
 	http://localhost:8080/rest/getvehicles/gcrf
 
-or 
+or CQL:
 
-	CQL - select * from current_location where solr_query = '{"q": "tile1:gcrf"}' limit 1000;
+    select * from current_location where solr_query = '{"q": "tile1:gcrf"}' limit 1000;
 
 
 To find all vehicles within a certain distance of a latitude and longitude, http://localhost:8080/rest/search/{lat}/{long}/{distance}
 
 	http://localhost:8080/rest/search/52.53956077140064/-0.20225833920426117/5
 	
-Or
+Or CQL:
 
 	select * from current_location where solr_query = '{"q": "*:*", "fq": "{!geofilt sfield=lat_long pt=52.53956077140064,-0.20225833920426117 d=5}"}' limit 1000;
 

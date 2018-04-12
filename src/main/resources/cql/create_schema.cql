@@ -24,7 +24,7 @@ ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldtype[@class='solr.S
       @spatialContextFactory='org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory'];
 
 ALTER SEARCH INDEX SCHEMA ON current_location ADD fields.field[@name='lat_long', @type='point',
-      @indexed='true', @docValues='true', @stored='true'];
+      @indexed='true', @stored='true'];
 ALTER SEARCH INDEX SCHEMA ON current_location SET fields.field[@name='vehicle']@type='string';
 ALTER SEARCH INDEX SCHEMA ON current_location SET fields.field[@name='vehicle']@docValues='true';
 ALTER SEARCH INDEX SCHEMA ON current_location ADD fields.field[@name='tile1', @type='text', @indexed='true', @docValues='true'];
@@ -54,7 +54,7 @@ ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldtype[@class='solr.SpatialRec
       @spatialContextFactory='org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory'];
 
 ALTER SEARCH INDEX SCHEMA ON vehicle ADD fields.field[@name='lat_long', @type='point', @indexed='true',
-     @docValues='true', @stored='true'];
+     @stored='true'];
 ALTER SEARCH INDEX SCHEMA ON vehicle SET fields.field[@name='vehicle']@type='string';
 ALTER SEARCH INDEX SCHEMA ON vehicle SET fields.field[@name='vehicle']@docValues='true';
 ALTER SEARCH INDEX SCHEMA ON vehicle ADD fields.field[@name='tile', @type='text', @indexed='true', @docValues='true'];
