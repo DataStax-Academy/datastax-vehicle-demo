@@ -49,15 +49,15 @@ To find all vehicles within a certain distance of a latitude and longitude, http
 	
 Or CQL:
 
-	select * from current_location where solr_query = '{"q": "*:*", "fq": "{!geofilt sfield=lat_long pt=52.53956077140064,-0.20225833920426117 d=5}"}' limit 1000;
+	select * from current_location where solr_query = '{"q": "*:*", "fq": "{!geofilt sfield=lat_long pt=\"52.53956077140064 -0.20225833920426117\" d=5}"}' limit 1000;
 
 To sort by the distance - e.g. to start with the closest, we can add sorting by the geodist() function
 
-	select * from current_location where solr_query = '{"q":"*:*", "fq": "{!geofilt sfield=lat_long pt=52.53956077140064,-0.20225833920426117 d=3}", "sort":"geodist(lat_long,52.53956077140064,-0.20225833920426117) asc"}';
+	select * from current_location where solr_query = '{"q":"*:*", "fq": "{!geofilt sfield=lat_long pt=\"52.53956077140064 -0.20225833920426117\" d=3}", "sort":"geodist(lat_long,52.53956077140064,-0.20225833920426117) asc"}';
  	
 If you have created the core on the vehicle table as well, you can run a query that will allow a user to search vehicles in a particular region in a particular time. 
 
-	select * from vehicle where solr_query = '{"q": "*:*", "fq": "date:[2017-02-11T12:32:00.000Z TO 2017-02-11T12:34:00.000Z] AND {!bbox sfield=lat_long pt=51.404970234124800,-.206445841245690 d=1}"}' limit 1000;
+	select * from vehicle where solr_query = '{"q": "*:*", "fq": "date:[2017-02-11T12:32:00.000Z TO 2017-02-11T12:34:00.000Z] AND {!bbox sfield=lat_long pt=\"51.404970234124800 -.206445841245690\" d=1}"}' limit 1000;
 
 To remove the tables and the schema, run the following.
 
