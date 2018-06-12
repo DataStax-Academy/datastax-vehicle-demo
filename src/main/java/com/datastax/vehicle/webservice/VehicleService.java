@@ -1,6 +1,7 @@
 package com.datastax.vehicle.webservice;
 
 import java.util.List;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 
@@ -38,5 +39,9 @@ public class VehicleService {
 	public List<Vehicle> searchAreaTimeLastPosition(DateTime from, DateTime to){
 		
 		return dao.getVehiclesByAreaTimeLastPosition(from, to);
+	}
+
+	public Map<String, Object> getHeatmap(double left, double bottom, double right, double top, DateTime from, DateTime to) {
+		return dao.generateHeatmap(left, bottom, right, top, from, to);
 	}
 }

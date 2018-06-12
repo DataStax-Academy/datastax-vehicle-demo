@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +14,8 @@ import java.util.concurrent.ExecutionException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,5 +256,49 @@ public class VehicleDao {
 		}
 
 		return vehicleMovements;
+	}
+
+	public Map<String, Object> generateHeatmap(double left, double bottom, double right, double top, DateTime from, DateTime to) {
+		Map<String, Object> map = new HashMap<>();
+
+		String fq="";
+		if (from != null || to != null) {
+			StringBuilder sb = new StringBuilder("\"fq\":\"date:[");
+			if (from != null) {
+				sb.append(dateFormatter.format(from));
+			} else {
+				sb.append("*");
+			}
+			sb.append(" TO ");
+			if (to != null) {
+				sb.append(dateFormatter.format(to));
+			} else {
+				sb.append("*");
+			}
+			sb.append("]\",");
+		}
+
+		String facet = String.format("\"facet\":{\"heatmap\":\"lat_long\", \"heatmap.geom\":\"[\\\"%f %f\\\" TO \\\"%f %f\\\"]\"}",
+				left, bottom, right, top);
+		String solr_query = "{\"q\":\"*:*\"," + fq + facet + "}";
+//		System.out.println("solr_query=" + solr_query);
+
+		BoundStatement bound = queryVehicleSolr.bind(solr_query);
+		ResultSet resultSet = session.execute(bound);
+
+
+		Row row = resultSet.one();
+		String result = row.getString(0);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			map = mapper.readValue(result, new TypeReference<Map<String, Object>>() {});
+			map = (Map<String, Object>) map.get("lat_long");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+//		System.out.println("map=" + map);
+
+		return map;
 	}
 }

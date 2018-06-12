@@ -27,8 +27,6 @@ public class Main {
 	private static DateTime date;
 
 	public Main() {
-
-
 		String contactPointsStr = PropertyHelper.getProperty("contactPoints", "localhost");
 		this.dao = new VehicleDao(contactPointsStr.split(","));
 		
@@ -42,7 +40,6 @@ public class Main {
 		
 		//Start Executors
 		for (int i = 0; i < noOfThreads; i++) {
-
 			KillableRunner task = new VehicleWriter(dao, queue);
 			executor.execute(task);
 			tasks.add(task);

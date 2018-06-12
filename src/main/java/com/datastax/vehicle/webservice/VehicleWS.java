@@ -1,13 +1,17 @@
+
 package com.datastax.vehicle.webservice;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.jws.WebService;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -80,6 +84,35 @@ public class VehicleWS {
 		List<Vehicle> result = service.searchAreaTimeLastPosition(from, to);
 		
 		return Response.status(201).entity(result).build();
+	}
+
+	@GET
+	@Path("/vehicles/heatmap")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getVehicleHeatmap(@DefaultValue("-180") @QueryParam("left") double left,
+									  @DefaultValue("-90") @QueryParam("bottom") double bottom,
+									  @DefaultValue("180") @QueryParam("right") double right,
+									  @DefaultValue("90") @QueryParam("top") double top,
+									  @QueryParam("fromdate") String fromDate,
+									  @QueryParam("todate") String toDate) {
+
+		DateTime to = null;
+		DateTime from = null;
+		try {
+			if (fromDate != null)
+				from = DateUtils.parseDate(fromDate);
+			if (toDate != null)
+				to = DateUtils.parseDate(toDate);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(400).entity("error in date format").build();
+		}
+		if (left < -180 || bottom < -90 || right > 180 || top > 90) {
+			return Response.status(400).entity("Incorrect boundaries!").build();
+		}
+
+		Map<String, Object> result = service.getHeatmap(left, bottom, right, top, from, to);
+		return Response.status(200).entity(result).build();
 	}
 
 }
