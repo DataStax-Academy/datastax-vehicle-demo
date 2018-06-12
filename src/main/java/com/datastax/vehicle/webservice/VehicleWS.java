@@ -107,9 +107,14 @@ public class VehicleWS {
 			e.printStackTrace();
 			return Response.status(400).entity("error in date format").build();
 		}
-		if (left < -180 || bottom < -90 || right > 180 || top > 90) {
-			return Response.status(400).entity("Incorrect boundaries!").build();
-		}
+		if (left < -180)
+			left = -180;
+		if (bottom < -90)
+			bottom = -90;
+		if (right > 180)
+			right = 180;
+		if (top > 90)
+			top = 90;
 
 		Map<String, Object> result = service.getHeatmap(left, bottom, right, top, from, to);
 		return Response.status(200).entity(result).build();
