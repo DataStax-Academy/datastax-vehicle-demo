@@ -39,8 +39,8 @@ L.SolrHeatmapQueryAdapters = {
 						rows: 0,
            facet: true,
            'facet.heatmap': this.options.field,
-           'facet.heatmap.geom': this.layer._mapViewToWkt(bounds)
-//           fq: this.options.field + this.layer._mapViewToEnvelope(bounds)
+						'facet.heatmap.geom': this.layer._mapViewToWkt(bounds),
+           fq: this.options.field + this.layer._mapViewToEnvelope(bounds)
         },
         jsonp: 'json.wrf'
       };
@@ -425,30 +425,53 @@ L.SolrHeatmap = L.GeoJSON.extend({
   },
 
   _mapViewToEnvelope: function(bounds) {
-    if (this._map === undefined) {
-      return ':"Intersects(ENVELOPE(-180, 180, 90, -90))"';
-    }
     if (bounds === undefined) {
+				if (this._map === undefined) {
+						return ':["-180 -90" TO "180 90"]';
+				}
       bounds = this._map.getBounds();
     }
     var wrappedSw = bounds.getSouthWest().wrap();
     var wrappedNe = bounds.getNorthEast().wrap();
-    return ':"Intersects(ENVELOPE(' + wrappedSw.lng + ', ' + wrappedNe.lng + ', ' + bounds.getNorth() + ', ' + bounds.getSouth() + '))"';
+			var left = wrappedSw.lng;
+			if (left < -180)
+					left = -180;
+			var bottom = wrappedSw.lat;
+			if (bottom < -90)
+					bottom = -90;
+			var right = wrappedNe.lng;
+			if (right > 180)
+					right = 180;
+			var top = wrappedNe.lat;
+			if (top > 90)
+					top = 90;
+    return ':["' + left + '  ' + bottom + '" TO "' + right + ' ' + top + '"]';
   },
 
   _mapViewToWkt: function(bounds) {
-    if (this._map === undefined) {
-      return '["-180 -90" TO "180 90"]';
-    }
     if (bounds === undefined) {
+				if (this._map === undefined) {
+						return '["-180 -90" TO "180 90"]';
+				}
       bounds = this._map.getBounds();
     }
     var wrappedSw = bounds.getSouthWest().wrap();
 			var wrappedNe = bounds.getNorthEast().wrap();
+			var left = wrappedSw.lng;
+			if (left < -180)
+					left = -180;
+			var bottom = wrappedSw.lat;
+			if (bottom < -90)
+					bottom = -90;
+			var right = wrappedNe.lng;
+			if (right > 180)
+					right = 180;
+			var top = wrappedNe.lat;
+			if (top > 90)
+					top = 90;
 //			console.log("wrappedNe=" + JSON.stringify(wrappedNe));
 			//			console.log("wrappedSw=" + JSON.stringify(wrappedSw));
-			// TODO: investigate why it's failing sometimes
-			return '["' + wrappedSw.lat + ' ' + wrappedSw.lng + '" TO "' + wrappedNe.lat + ' ' + wrappedNe.lng + '"]';
+			return '["' + left + ' ' + bottom + '" TO "' + right + ' ' + top + '"]';
   }
 });
 
