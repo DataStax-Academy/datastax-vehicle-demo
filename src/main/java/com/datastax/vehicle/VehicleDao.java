@@ -188,7 +188,7 @@ public class VehicleDao {
 
 	public List<Vehicle> getVehiclesByAreaTimeLastPosition(DateTime from, DateTime to) {
 
-		String solr_query = "'{\"q\":\"*:*\"," + "\"fq\":\"date:[" + solrDateFormatter.format(from.toDate()) + " TO "
+		String solr_query = "{\"q\":\"*:*\"," + "\"fq\":\"date:[" + solrDateFormatter.format(from.toDate()) + " TO "
 				+ solrDateFormatter.format(to.toDate()) + "] "
 				+ "AND lat_long:\\\"isWithin(POLYGON((48.736989 10.271339, 48.067576 11.609030, 48.774243 12.913120, 49.595759 11.123788, 48.736989 10.271339)))\\\"\",\"facet\":{\"field\":\"vehicle\", \"limit\":\"5000000\"}}";
 
