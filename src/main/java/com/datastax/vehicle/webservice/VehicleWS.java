@@ -1,6 +1,7 @@
 
 package com.datastax.vehicle.webservice;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.impl.cookie.DateParseException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,25 +31,41 @@ import com.github.davidmoten.geo.LatLong;
 public class VehicleWS {
 
 	private static Logger logger = LoggerFactory.getLogger(VehicleWS.class);
-	
+	private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private final static MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
+
 	//Service Layer.
 	private VehicleService service = new VehicleService();
-	
+
+	private static Response generateResponse(Object object, String callback) throws IOException {
+		String result = OBJECT_MAPPER.writeValueAsString(object);
+
+		MediaType contentType = MediaType.APPLICATION_JSON_TYPE;
+		if (callback != null) {
+			result = callback + "( " + result + " );";
+			contentType = APPLICATION_JAVASCRIPT;
+		}
+
+		return Response.status(200).entity(result).type(contentType).build();
+	}
+
 	//Dates - 20160801-000000
 	@GET
 	@Path("/getmovements/{vehicle}/{date}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMovements(@PathParam("vehicle") String vehicle, @PathParam("date") String dateString) {
+	public Response getMovements(@PathParam("vehicle") String vehicle, @PathParam("date") String dateString,
+								 @QueryParam("callback") String callback) throws IOException {
 				
 		List<Vehicle> result = service.getVehicleMovements(vehicle, dateString);
 		
-		return Response.status(201).entity(result).build();
+		return generateResponse(result, callback);
 	}
 	
 	@GET
 	@Path("/getvehicles/{tile}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getVehiclesByTile(@PathParam("tile") String tile) {
+	public Response getVehiclesByTile(@PathParam("tile") String tile,
+									  @QueryParam("callback") String callback) {
 				
 		List<Vehicle> result = service.getVehiclesByTile(tile);
 		
@@ -57,17 +75,20 @@ public class VehicleWS {
 	@GET
 	@Path("/search/{lat}/{lon}/{distance}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response searchForVehicles(@PathParam("lat") double lat, @PathParam("lon") double lon, @PathParam("distance") int distance) {
+	public Response searchForVehicles(@PathParam("lat") double lat, @PathParam("lon") double lon,
+									  @PathParam("distance") int distance,
+									  @QueryParam("callback") String callback) throws IOException {
 				
 		List<Vehicle> result = service.searchVehiclesByLonLatAndDistance(distance, new LatLong(lat,lon));
-		
-		return Response.status(201).entity(result).build();
+
+		return generateResponse(result, callback);
 	}	
 	
 	@GET
 	@Path("/getlastmovements/{fromdate}/{todate}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLastMovements(@PathParam("fromdate") String fromDate, @PathParam("todate") String toDate) {
+	public Response getLastMovements(@PathParam("fromdate") String fromDate, @PathParam("todate") String toDate,
+									 @QueryParam("callback") String callback) throws IOException {
 				
 		logger.info("GetLastMovements");
 		DateTime to = null;
@@ -82,19 +103,20 @@ public class VehicleWS {
 		
 		logger.info("Calling");
 		List<Vehicle> result = service.searchAreaTimeLastPosition(from, to);
-		
-		return Response.status(201).entity(result).build();
+
+		return generateResponse(result, callback);
 	}
 
 	@GET
 	@Path("/vehicles/heatmap")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({MediaType.APPLICATION_JSON, "application/javascript"})
 	public Response getVehicleHeatmap(@DefaultValue("-180") @QueryParam("left") double left,
 									  @DefaultValue("-90") @QueryParam("bottom") double bottom,
 									  @DefaultValue("180") @QueryParam("right") double right,
 									  @DefaultValue("90") @QueryParam("top") double top,
 									  @QueryParam("fromdate") String fromDate,
-									  @QueryParam("todate") String toDate) {
+									  @QueryParam("todate") String toDate,
+									  @QueryParam("callback") String callback) throws IOException {
 
 		DateTime to = null;
 		DateTime from = null;
@@ -116,8 +138,8 @@ public class VehicleWS {
 		if (top > 90)
 			top = 90;
 
-		Map<String, Object> result = service.getHeatmap(left, bottom, right, top, from, to);
-		return Response.status(200).entity(result).build();
+		Map<String, Object> map = service.getHeatmap(left, bottom, right, top, from, to);
+		return generateResponse(map, callback);
 	}
 
 }

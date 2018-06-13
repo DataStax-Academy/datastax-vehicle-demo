@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +69,8 @@ public class VehicleDao {
 	private DateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
 
 	private SessionLimiter limiter;
+
+	private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public VehicleDao(String[] contactPoints) {
 
@@ -193,12 +192,11 @@ public class VehicleDao {
 		ResultSet resultSet = session.execute(queryVehicleSolr.bind(solr_query));
 
 		String result = resultSet.one().getString(0);
-		ObjectMapper mapper = new ObjectMapper();
 
 		List<String> vehicles = new ArrayList<String>();
 
 		try {
-			Map<String, Object> map = mapper.readValue(result, new TypeReference<Map<String, Object>>() {
+			Map<String, Object> map = OBJECT_MAPPER.readValue(result, new TypeReference<Map<String, Object>>() {
 			});
 
 			Map<String, Integer> facets = (Map<String, Integer>) map.get("vehicle");
@@ -286,12 +284,10 @@ public class VehicleDao {
 		BoundStatement bound = queryVehicleSolr.bind(solr_query);
 		ResultSet resultSet = session.execute(bound);
 
-
 		Row row = resultSet.one();
 		String result = row.getString(0);
-		ObjectMapper mapper = new ObjectMapper();
 		try {
-			map = mapper.readValue(result, new TypeReference<Map<String, Object>>() {});
+			map = OBJECT_MAPPER.readValue(result, new TypeReference<Map<String, Object>>() {});
 			map = (Map<String, Object>) map.get("lat_long");
 		} catch (Exception e) {
 			e.printStackTrace();
