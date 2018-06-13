@@ -2,9 +2,11 @@ package com.datastax.vehicle;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import com.datastax.vehicle.model.EngineStatus;
 import com.datastax.vehicle.model.VehicleStatus;
+import org.apache.commons.math3.random.RandomGenerator;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,13 @@ public class VehicleUpdater {
 
 	private double lat = 48.759231d;
 	private double lon = 11.3926907d;
+
+	private static Random RANDOM = new Random(System.currentTimeMillis());
+
+	private static double[] LATS = {48.759231d, 51.528308, 40.7127753, 52.52000659999999, 37.35410789999999, -33.8688197,
+			55.755826};
+	private static double[] LONS = {11.3926907d, -0.3817765, -74.0059728, 13.404953999999975, -121.95523559999998,
+			151.20929550000005, 37.617299900000035};
 	
 	private static Map<String, LatLong> vehicleLocations = new HashMap<String, LatLong>();
 	private static Map<String, Double> vehicleSpeeds = new HashMap<String, Double>();
@@ -28,6 +37,9 @@ public class VehicleUpdater {
 
 	public VehicleUpdater(VehicleDao dao){
 		this.dao = dao;
+		int idx = RANDOM.nextInt(LATS.length);
+		this.lat = LATS[idx];
+		this.lon = LONS[idx];
 	}
 
 	public Vehicle updateVehicle(String vehicleId, DateTime date){
