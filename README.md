@@ -64,3 +64,19 @@ To remove the tables and the schema, run the following.
     mvn clean compile exec:java -Dexec.mainClass="com.datastax.demo.SchemaTeardown"
     
     
+## Generation of heatmaps of vehicle locations
+
+REST API provides `/rest/vehicles/heatmap` endpoint that allows to get data for generation of the heatmap of the vehicle locations. This API can accept bounding box for which heatmap should be generated (query parameters `left`, `bottom`, `right`, `top`) & time box (query parameters `fromdate` & `todate`). All parameters are optional, and default values will be used. **This API will work only with DSE 5.1.11 & 6.0.2** that fix the bug with heatmap generation.
+
+    http://localhost:8080/rest/vehicles/heatmap?left=0&bottom=0&top=20&right=50
+
+The result is the JSON payload described in the [Solr documentation](https://lucene.apache.org/solr/guide/6_6/spatial-search.html#SpatialSearch-HeatmapFaceting).
+
+This API also supports JSONP-style calls when the `callback` parameter is passed.
+
+### Heatmap generation demo
+
+Application includes 2 demos of the heatmap generation:
+- using the Solr HTTP API (work with any DSE version) - available at http://localhost:8080/heatmap-solr.html
+- using this service's API (work only with DSE > 5.1.11 or 6.0.2) - available at http://localhost:8080/heatmap-cql.html
+
