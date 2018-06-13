@@ -134,8 +134,10 @@ public class VehicleDao {
 	}
 
 	public List<Vehicle> searchVehiclesByLonLatAndDistance(int distance, LatLong latLong) {
-		String solr_query = "{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=\"" + latLong.getLat() + " "
-				+ latLong.getLon() + "\" d=" + distance + "}\"}";
+		String solr_query = "{\"q\": \"*:*\", \"fq\": \"{!geofilt sfield=lat_long pt=\\\"" + latLong.getLat() + " "
+				+ latLong.getLon() + "\\\" d=" + distance + "}\"}";
+
+		System.out.println("solr_query='" + solr_query + "'");
 		ResultSet resultSet = session.execute(queryCurrentLocation.bind(solr_query));
 
 		List<Vehicle> vehicleMovements = new ArrayList<Vehicle>();
