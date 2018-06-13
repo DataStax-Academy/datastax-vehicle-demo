@@ -18,56 +18,53 @@
   </head>
   <body>
     <div id="mapid"></div>
-    <p><span id='responseTime'></span>, <span id='numDocs'></span>, <span id='renderTime'></span></p>
+    <p><span id="responseTime"></span>, <span id="numDocs"></span>, <span id="renderTime"></span></p>
 
     <script>
-      var map = L.map('mapid').setView([11.37, 48.73], 4);
-      var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
-      }).addTo(map);
+var map = L.map('mapid').setView([48.73, 11.37], 2);
+var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+}).addTo(map);
 
-      function onEachFeature(feature, layer) {
-          var count = feature.properties.count.toLocaleString();
-          layer.bindPopup(count);
-      }
+function onEachFeature(feature, layer) {
+    var count = feature.properties.count.toLocaleString();
+    layer.bindPopup(count);
+}
 
-      var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/datastax.vehicle', {
-          // Solr field with geospatial data (should be type Spatial Recursive Prefix Tree)
-          field: 'lat_long',
-          
-          // Set type of visualization. Allowed types: 'geojsonGrid', 'clusters' Note: 'clusters' requires LeafletMarkerClusterer
-          type: 'geojsonGrid',
-          // type: 'clusters',
-          
-          // Inherited from L.GeoJSON
-          onEachFeature: onEachFeature
-      }).addTo(map);
-      
-      solr.on('dataAdded', function(data) {
-          $('#responseTime').html('Solr response time: ' + solr.responseTime + ' ms');
-          var docsCount = solr.count;
-          $('#numDocs').html('Number of docs: ' + docsCount.toLocaleString());
-          $('#renderTime').html('Render time: ' + solr.renderTime + ' ms');
-      });
-
-    // An example of requestNearby in use with Leaflet click handlers
-    map.on('click', function (e) {
-        solr.requestNearby(e.layerPoint);
-    });
-    solr.on('click', function (e) {
-        solr.requestNearby(e.layerPoint);
-    });
+var solr = L.solrHeatmap({
+    // Set type of visualization. Allowed types: 'geojsonGrid', 'clusters' Note: 'clusters' requires LeafletMarkerClusterer
+    type: 'geojsonGrid',
+    // type: 'clusters',
     
-    solr.on('nearbyQueried', function(data) {
-        var rect = L.rectangle(data.bounds);
-        $('#pointQuery').html('Query returned: ' + data.response.numFound + ' results')
-        rect.on('add', function() {
-            setTimeout(function() {
-                rect.removeFrom(map);
-            }, 500)
-        })  
-        rect.addTo(map);
+    // Inherited from L.GeoJSON
+    onEachFeature: onEachFeature
+}).addTo(map);
+
+solr.on('dataAdded', function(data) {
+    $('#responseTime').html('Service response time: ' + solr.responseTime + ' ms');
+    var docsCount = solr.count;
+    $('#numDocs').html('Number of docs: ' + docsCount.toLocaleString());
+    $('#renderTime').html('Render time: ' + solr.renderTime + ' ms');
+});
+
+// An example of requestNearby in use with Leaflet click handlers
+map.on('click', function (e) {
+    solr.requestNearby(e.layerPoint);
+});
+solr.on('click', function (e) {
+    solr.requestNearby(e.layerPoint);
+});
+
+solr.on('nearbyQueried', function(data) {
+    var rect = L.rectangle(data.bounds);
+    $('#pointQuery').html('Query returned: ' + data.response.numFound + ' results');
+    rect.on('add', function() {
+        setTimeout(function() {
+            rect.removeFrom(map);
+        }, 500);
     });
+    rect.addTo(map);
+});
     </script>
   </body>
 </html>

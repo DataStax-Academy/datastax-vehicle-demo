@@ -46,6 +46,8 @@ public class VehicleWS {
 			contentType = APPLICATION_JAVASCRIPT;
 		}
 
+//		System.out.println("result='" + result + "'");
+
 		return Response.status(200).entity(result).type(contentType).build();
 	}
 

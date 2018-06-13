@@ -31,55 +31,14 @@ L.SolrHeatmapQueryAdapters = {
   default: L.SolrHeatmapBaseQueryAdapter.extend({
     ajaxOptions: function(bounds) {
       return {
-        url: this._solrQuery(),
+				url: '/rest/vehicles/heatmap',
         dataType: 'JSONP',
-        data: {
-          q: '*:*',
-						wt: 'json',
-						rows: 0,
-           facet: true,
-           'facet.heatmap': this.options.field,
-						'facet.heatmap.geom': this.layer._mapViewToWkt(bounds),
-           fq: this.options.field + this.layer._mapViewToEnvelope(bounds)
-        },
-        jsonp: 'json.wrf'
+				data: this.layer._mapViewToWkt(bounds),
+        jsonp: 'callback'
       };
     },
-    responseFormatter: function(data) {
-      this.layer.count = data.response.numFound;
-      return data.facet_counts.facet_heatmaps;
-    },
-    _solrQuery: function() {
-      return this.layer._solrUrl + '/' + this.options.solrRequestHandler + '?' + this.options.field;
-    }
-  }),
-  blacklight: L.SolrHeatmapBaseQueryAdapter.extend({
-    ajaxOptions: function(bounds) {
-      return {
-        url: this.layer._solrUrl,
-        dataType: 'JSON',
-        data: {
-					rows: 0,
-          bbox: this._mapViewToBbox(bounds),
-          format: 'json',
-        },
-        jsonp: false
-      };
-    },
-    responseFormatter: function(data) {
-      this.layer.count = data.response.pages.total_count;
-      return data.response.facet_heatmaps;
-    },
-    _mapViewToBbox: function (bounds) {
-      if (this.layer._map === undefined) {
-        return '-180,-90,180,90';
-      }
-      if (bounds === undefined) {
-        bounds = this._map.getBounds();
-      }
-      var wrappedSw = bounds.getSouthWest().wrap();
-      var wrappedNe = bounds.getNorthEast().wrap();
-      return [wrappedSw.lng, bounds.getSouth(), wrappedNe.lng, bounds.getNorth()].join(',');
+		responseFormatter: function(data) {
+				return data;
     }
   })
 }
@@ -94,15 +53,15 @@ L.SolrHeatmap = L.GeoJSON.extend({
     colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'],
     maxSampleSize: Number.MAX_SAFE_INTEGER,  // for Jenks classification
     queryAdapter: 'default',
-    queryRadius: 40, // In pixels, used for nearby query
+    queryRadius: 40 // In pixels, used for nearby query
   },
 
-  initialize: function(url, options) {
+  initialize: function(options) {
     var _this = this;
     L.setOptions(_this, options);
     _this.queryAdapter = new L.SolrHeatmapQueryAdapters[this.options.queryAdapter](this.options, _this);
-    _this._solrUrl = url;
     _this._layers = {};
+		_this.count = 0;
   },
 
   onAdd: function (map) {
@@ -135,7 +94,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
       _this.nearbyResponseTime = Date.now() - startTime;
       data.bounds = bounds;
       _this.fireEvent('nearbyQueried', data);
-    }
+    };
     $.ajax(options);
   },
 
@@ -150,20 +109,20 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
   _computeHeatmapObject: function(data) {
     var _this = this;
-    _this.facetHeatmap = {},
-      facetHeatmapArray = _this.queryAdapter.responseFormatter(data)[this.options.field];
+		_this.facetHeatmap = data;
 
-    // Convert array to an object
-    $.each(facetHeatmapArray, function(index, value) {
-      if ((index + 1) % 2 !== 0) {
-        // Set object keys for even items
-        _this.facetHeatmap[value] = '';
-      }else {
-        // Set object values for odd items
-        _this.facetHeatmap[facetHeatmapArray[index - 1]] = value;
-      }
-    });
-
+			var cnt = 0;
+			if (!!data  && !!data.counts_ints2D) {
+					$.each(data.counts_ints2D, function(index, value) {
+							if (!!value) {
+									$.each(value, function(idx, count) {
+											cnt = cnt + count;
+									});
+							}
+					});
+			}
+			this.count = cnt;
+		
     this._computeIntArrays();
   },
 
@@ -392,7 +351,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
     }
 
     sampledArray.push(maxValue);  // make sure largest value gets in, doesn't matter much if duplicated
-    return sampledArray
+		return sampledArray;
   },
 
   _minLng: function(column) {
@@ -420,38 +379,14 @@ L.SolrHeatmap = L.GeoJSON.extend({
       _this.renderStart = Date.now();
       _this._computeHeatmapObject(data);
       _this.fireEvent('dataAdded', data);
-    }
+    };
     $.ajax(options);
-  },
-
-  _mapViewToEnvelope: function(bounds) {
-    if (bounds === undefined) {
-				if (this._map === undefined) {
-						return ':["-180 -90" TO "180 90"]';
-				}
-      bounds = this._map.getBounds();
-    }
-    var wrappedSw = bounds.getSouthWest().wrap();
-    var wrappedNe = bounds.getNorthEast().wrap();
-			var left = wrappedSw.lng;
-			if (left < -180)
-					left = -180;
-			var bottom = wrappedSw.lat;
-			if (bottom < -90)
-					bottom = -90;
-			var right = wrappedNe.lng;
-			if (right > 180)
-					right = 180;
-			var top = wrappedNe.lat;
-			if (top > 90)
-					top = 90;
-    return ':["' + left + '  ' + bottom + '" TO "' + right + ' ' + top + '"]';
   },
 
   _mapViewToWkt: function(bounds) {
     if (bounds === undefined) {
 				if (this._map === undefined) {
-						return '["-180 -90" TO "180 90"]';
+						return {left: -180, bottom: -90, right: 180, top: 90};
 				}
       bounds = this._map.getBounds();
     }
@@ -469,9 +404,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
 			var top = wrappedNe.lat;
 			if (top > 90)
 					top = 90;
-//			console.log("wrappedNe=" + JSON.stringify(wrappedNe));
-			//			console.log("wrappedSw=" + JSON.stringify(wrappedSw));
-			return '["' + left + ' ' + bottom + '" TO "' + right + ' ' + top + '"]';
+			return {left: left, bottom: bottom, right: right, top: top};
   }
 });
 
