@@ -25,9 +25,9 @@ public class VehicleUpdater {
 	private static Random RANDOM = new Random(System.currentTimeMillis());
 
 	private static double[] LATS = {48.759231d, 51.528308, 40.7127753, 52.52000659999999, 37.35410789999999, -33.8688197,
-			55.755826};
+			55.755826, 35.6894875};
 	private static double[] LONS = {11.3926907d, -0.3817765, -74.0059728, 13.404953999999975, -121.95523559999998,
-			151.20929550000005, 37.617299900000035};
+			151.20929550000005, 37.617299900000035, 139.69170639999993};
 	
 	private static Map<String, LatLong> vehicleLocations = new HashMap<String, LatLong>();
 	private static Map<String, Double> vehicleSpeeds = new HashMap<String, Double>();
@@ -37,9 +37,6 @@ public class VehicleUpdater {
 
 	public VehicleUpdater(VehicleDao dao){
 		this.dao = dao;
-		int idx = RANDOM.nextInt(LATS.length);
-		this.lat = LATS[idx];
-		this.lon = LONS[idx];
 	}
 
 	public Vehicle updateVehicle(String vehicleId, DateTime date){
@@ -48,7 +45,6 @@ public class VehicleUpdater {
 		LatLong location = vehicleLocations.get(vehicleId);
 		Double speed = vehicleSpeeds.get(vehicleId);
 		Double temperature = vehicleTemperatures.get(vehicleId);
-		
 		
 		location = updateLocation(location);
 		speed = updateSpeed(speed);
@@ -116,6 +112,10 @@ public class VehicleUpdater {
 	public void createStartValues(int totalNoOfVehicles) {
 
 		for (int i = 0; i < totalNoOfVehicles; i++) {
+			int idx = RANDOM.nextInt(LATS.length);
+			this.lat = LATS[idx];
+			this.lon = LONS[idx];
+
 			double lat = getRandomLat();
 			double lon = getRandomLng();
 
