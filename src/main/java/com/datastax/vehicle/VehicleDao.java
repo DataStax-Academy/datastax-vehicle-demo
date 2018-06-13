@@ -91,12 +91,13 @@ public class VehicleDao {
 
 	public void insertVehicleData(Vehicle vehicle) {
 		try {
+			Point point = new Point(vehicle.getLatLong().getLon(), vehicle.getLatLong().getLat());
 			limiter.executeAsync(insertVehicle.bind(vehicle.getVehicle(), dateFormatter.format(vehicle.getDate()),
-					vehicle.getDate(), new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()),
+					vehicle.getDate(), point,
 					vehicle.getTile2(), vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
 
 			limiter.executeAsync(insertCurrentLocation.bind(vehicle.getVehicle(), vehicle.getTile(), vehicle.getTile2(),
-					new Point(vehicle.getLatLong().getLat(), vehicle.getLatLong().getLon()), vehicle.getDate(),
+					point, vehicle.getDate(),
 					vehicle.getSpeed(), vehicle.getTemperature(), vehicle.getProperties()));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
