@@ -262,9 +262,12 @@ public class VehicleDao {
 	public Map<String, Object> generateHeatmap(double left, double bottom, double right, double top, DateTime from, DateTime to) {
 		Map<String, Object> map = new HashMap<>();
 
-		String fq="";
+		String coords = String.format("[\\\"%f %f\\\" TO \\\"%f %f\\\"]",
+				left, bottom, right, top);
+		StringBuilder sb = new StringBuilder("\"fq\":\"lat_long:");
+		sb.append(coords);
 		if (from != null || to != null) {
-			StringBuilder sb = new StringBuilder("\"fq\":\"date:[");
+			sb.append(" AND date:[");
 			if (from != null) {
 				sb.append(dateFormatter.format(from));
 			} else {
@@ -276,13 +279,15 @@ public class VehicleDao {
 			} else {
 				sb.append("*");
 			}
-			sb.append("]\",");
+			sb.append(']');
 		}
+		sb.append("\",");
+		String fq=sb.toString();
 
-		String facet = String.format("\"facet\":{\"heatmap\":\"lat_long\", \"heatmap.geom\":\"[\\\"%f %f\\\" TO \\\"%f %f\\\"]\"}",
-				left, bottom, right, top);
+		String facet = String.format("\"facet\":{\"heatmap\":\"lat_long\", \"heatmap.geom\":\"%s\"}",
+				coords);
 		String solr_query = "{\"q\":\"*:*\"," + fq + facet + "}";
-//		System.out.println("solr_query=" + solr_query);
+//		System.out.println("solr_query='" + solr_query + "'");
 
 		BoundStatement bound = queryVehicleSolr.bind(solr_query);
 		ResultSet resultSet = session.execute(bound);
