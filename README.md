@@ -3,7 +3,7 @@ Vehicle Tracking App
 
 This demo traces moving vehicles as they pass through geohash tiles. It also keeps track of a vehicle movements on a day to day basis. Similar to a vessel tracking or taxi application.
 
-The application 
+The application:
 
 1. Allows the user to track a vehicles movements per day.
 
@@ -11,10 +11,12 @@ The application
 
 3. Find all vehicles within a given radius of any vehicle
 
-To specify contact points use the contactPoints command line parameter e.g. '-DcontactPoints=192.168.25.100,192.168.25.101'
+This version of code works with DSE 6.7 and above. For instructions on setup for DSE 5.1 & 6.0, check the `code-optimizations-5.1-and-6.0` branch.
+
+To specify contact points use the contactPoints command line parameter e.g. `-DcontactPoints=192.168.25.100,192.168.25.101`
 The contact points can take mulitple points in the IP,IP,IP (no spaces).
  
-To create the schema & search indices ([JTS need to be installed](https://docs.datastax.com/en/dse/5.1/dse-dev/datastax_enterprise/search/queriesSpatial.html)), run the following:
+To create the schema & search indices, run the following:
 
 	mvn clean compile exec:java -Dexec.mainClass="com.datastax.demo.SchemaSetup" -DcontactPoints=localhost
 	
@@ -66,7 +68,7 @@ To remove the tables and the schema, run the following.
     
 ## Generation of heatmaps of vehicle locations
 
-REST API provides `/rest/vehicles/heatmap` endpoint that allows to get data for generation of the heatmap of the vehicle locations. This API can accept bounding box for which heatmap should be generated (query parameters `left`, `bottom`, `right`, `top`) & time box (query parameters `fromdate` & `todate`). All parameters are optional, and default values will be used. **This API will work only with DSE 5.1.11 & 6.0.2** that fix the bug with heatmap generation.
+REST API provides `/rest/vehicles/heatmap` endpoint that allows to get data for generation of the heatmap of the vehicle locations. This API can accept bounding box for which heatmap should be generated (query parameters `left`, `bottom`, `right`, `top`) & time box (query parameters `fromdate` & `todate`). All parameters are optional, and default values will be used. **This API will work only with DSE 5.1.11, 6.0.2 & 6.7.0** that fix the bug with heatmap generation.
 
     http://localhost:8080/rest/vehicles/heatmap?left=0&bottom=0&top=20&right=50
 
@@ -78,5 +80,5 @@ This API also supports JSONP-style calls when the `callback` parameter is passed
 
 Application includes 2 demos of the heatmap generation:
 - using the Solr HTTP API (work with any DSE version) - available at http://localhost:8080/heatmap-solr.html
-- using this service's API (work only with DSE > 5.1.11 or 6.0.2) - available at http://localhost:8080/heatmap-cql.html
+- using this service's API (work only with DSE >= 5.1.11 or >= 6.0.2 or >= 6.7.0) - available at http://localhost:8080/heatmap-cql.html
 
