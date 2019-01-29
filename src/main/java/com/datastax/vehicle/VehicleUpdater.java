@@ -19,15 +19,17 @@ public class VehicleUpdater {
 	
 	private static Logger logger = LoggerFactory.getLogger(VehicleUpdater.class);
 
-	private double lat = 48.759231d;
-	private double lon = 11.3926907d;
+	private double lat = 0;
+	private double lon = 0;
 
 	private static Random RANDOM = new Random(System.currentTimeMillis());
 
-	private static double[] LATS = {48.759231d, 51.528308, 40.7127753, 52.52000659999999, 37.35410789999999, -33.8688197,
-			55.755826, 35.6894875};
-	private static double[] LONS = {11.3926907d, -0.3817765, -74.0059728, 13.404953999999975, -121.95523559999998,
-			151.20929550000005, 37.617299900000035, 139.69170639999993};
+	private static double[] LATS = {48.759231, 51.528308, 40.7127753, 52.52000659999999, 37.35410789999999,
+                                    -33.8688197, 55.755826, 35.6894875, 48.7862947, 48.176834, 52.4357075,
+                                    51.4682293};
+	private static double[] LONS = {11.3926907, -0.3817765, -74.0059728, 13.404953999999975, -121.95523559999998,
+                                    151.20929550000005, 37.617299900000035, 139.69170639999993, 9.2390514,
+                                    11.5569026, 10.7606912, 7.2677247};
 	
 	private static Map<String, LatLong> vehicleLocations = new HashMap<String, LatLong>();
 	private static Map<String, Double> vehicleSpeeds = new HashMap<String, Double>();
@@ -70,7 +72,6 @@ public class VehicleUpdater {
 	}
 	
 	private Double updateSpeed(double speed){
-		
 		double acceleration = Math.random() < .5 ?  -3  : +3;
 		
 		//Change speed
@@ -97,14 +98,14 @@ public class VehicleUpdater {
 			return latLong;
 
 		if (Math.random() < .5)
-			lon += .0001d;
+			lon += .00001d;
 		else
-			lon -= .0001d;
+			lon -= .00001d;
 
 		if (Math.random() < .5)
-			lat += .0001d;
+			lat += .00001d;
 		else
-			lat -= .0001d;
+			lat -= .00001d;
 		
 		return new LatLong(lat,lon);
 	}
