@@ -101,7 +101,9 @@
                           <version>9.4.7.v20170914</version>
 				<configuration>
 				  <scanIntervalSeconds>10</scanIntervalSeconds>
-                                  <contextPath>/</contextPath>
+                                  <webApp>
+                                    <contextPath>/</contextPath>
+                                  </webApp>
 				</configuration>
 				<executions>
 					<execution>
