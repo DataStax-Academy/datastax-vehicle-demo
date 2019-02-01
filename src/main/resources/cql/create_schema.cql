@@ -16,10 +16,10 @@ create table if not exists current_location (
 CREATE SEARCH INDEX ON current_location with columns date, speed, p_, temperature
     AND OPTIONS {reindex: false, lenient: true};
 
-ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldtype[@class='solr.StrField', @name='string'];
-ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldtype[@class='solr.TextField', @name='text']
+ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldType[@class='solr.StrField', @name='string'];
+ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldType[@class='solr.TextField', @name='text']
 WITH '{"analyzer":{"tokenizer":{"class":"solr.StandardTokenizerFactory"}}}';
-ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldtype[@class='solr.SpatialRecursivePrefixTreeFieldType',
+ALTER SEARCH INDEX SCHEMA ON current_location ADD types.fieldType[@class='solr.SpatialRecursivePrefixTreeFieldType',
       @name='point', @distanceUnits='kilometers',
       @spatialContextFactory='org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory'];
 
@@ -46,10 +46,10 @@ create table if not exists vehicle(
 CREATE SEARCH INDEX ON vehicle with columns date, speed, temperature, p_
     AND OPTIONS {reindex: false};
 
-ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldtype[@class='solr.StrField', @name='string'];
-ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldtype[@class='solr.TextField', @name='text']
+ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldType[@class='solr.StrField', @name='string'];
+ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldType[@class='solr.TextField', @name='text']
 WITH '{"analyzer":{"tokenizer":{"class":"solr.StandardTokenizerFactory"}}}';
-ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldtype[@class='solr.SpatialRecursivePrefixTreeFieldType',
+ALTER SEARCH INDEX SCHEMA ON vehicle ADD types.fieldType[@class='solr.SpatialRecursivePrefixTreeFieldType',
       @name='point', @distanceUnits='kilometers',
       @spatialContextFactory='org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory'];
 
