@@ -5,11 +5,10 @@ This demo traces moving vehicles as they pass through geohash tiles. It also kee
 
 The application:
 
-1. Allows the user to track a vehicles movements per day.
-
-2. Find all vehicles per tile. Tiles have 2 sizes. Tile1 is large, Tile2 is small. 
-
-3. Find all vehicles within a given radius of any vehicle
+1. Allows the user to track a vehicles movements per day;
+2. Find all vehicles per tile. Tiles have 2 sizes. Tile1 is large, Tile2 is small;
+3. Find all vehicles within a given radius of any vehicle;
+4. Generate heatmap of the vehicle's locations.
 
 This version of code works with DSE 6.7 and above. For instructions on setup for DSE 5.1 & 6.0, check the `code-optimizations-5.1-and-6.0` branch.
 
@@ -24,7 +23,7 @@ To continuously update the locations of the vehicles run:
 	
 	mvn clean compile exec:java -Dexec.mainClass="com.datastax.vehicle.Main" -DcontactPoints=localhost
 	
-To start the web server, in another terminal run:
+To start the web server, in another terminal run (you can also pass `-DcontactPoints=localhost` to it):
 
 	mvn jetty:run
 	
@@ -36,7 +35,7 @@ Or
 
 	select * from vehicle where vehicle = '1' and day='20170412';
 
-To find all vehicle movement, use the rest command http://localhost:8080/rest/getvehicles/{tile} e.g.
+To find all vehicle movement, use the rest command `http://localhost:8080/rest/getvehicles/{tile}`, e.g.
 
 	http://localhost:8080/rest/getvehicles/gcrf
 
@@ -45,7 +44,7 @@ or CQL:
     select * from current_location where solr_query = '{"q": "tile1:gcrf"}' limit 1000;
 
 
-To find all vehicles within a certain distance of a latitude and longitude, http://localhost:8080/rest/search/{lat}/{long}/{distance}
+To find all vehicles within a certain distance of a latitude and longitude, `http://localhost:8080/rest/search/{lat}/{long}/{distance}`, e.g.
 
 	http://localhost:8080/rest/search/52.53956077140064/-0.20225833920426117/5
 	
@@ -53,7 +52,7 @@ Or CQL:
 
 	select * from current_location where solr_query = '{"q": "*:*", "fq": "{!geofilt sfield=lat_long pt=\"52.53956077140064 -0.20225833920426117\" d=5}"}' limit 1000;
 
-To sort by the distance - e.g. to start with the closest, we can add sorting by the geodist() function
+To sort by the distance - e.g. to start with the closest, we can add sorting by the `geodist()` function
 
 	select * from current_location where solr_query = '{"q":"*:*", "fq": "{!geofilt sfield=lat_long pt=\"52.53956077140064 -0.20225833920426117\" d=3}", "sort":"geodist(lat_long,52.53956077140064,-0.20225833920426117) asc"}';
  	
@@ -68,7 +67,7 @@ To remove the tables and the schema, run the following.
     
 ## Generation of heatmaps of vehicle locations
 
-REST API provides `/rest/vehicles/heatmap` endpoint that allows to get data for generation of the heatmap of the vehicle locations. This API can accept bounding box for which heatmap should be generated (query parameters `left`, `bottom`, `right`, `top`) & time box (query parameters `fromdate` & `todate`). All parameters are optional, and default values will be used. **This API will work only with DSE 5.1.11, 6.0.2 & 6.7.0** that fix the bug with heatmap generation.
+REST API provides `/rest/vehicles/heatmap` endpoint that allows to get data for generation of the heatmap of the vehicle locations. This API can accept bounding box for which heatmap should be generated (query parameters `left`, `bottom`, `right`, `top`) & time box (query parameters `fromdate` & `todate`). All parameters are optional, and default values will be used. **This API will work only with DSE 5.1.11, 6.0.2 & 6.7.0** that has the fix for the bug with heatmap generation.
 
     http://localhost:8080/rest/vehicles/heatmap?left=0&bottom=0&top=20&right=50
 
