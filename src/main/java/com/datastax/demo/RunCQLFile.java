@@ -1,5 +1,7 @@
 package com.datastax.demo;
 
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +69,22 @@ public abstract class RunCQLFile {
 
 	void run(String cql){
 		logger.info("Running : " + cql);
-		session.execute(cql);
+		ResultSet rs = session.execute(cql);
+
+		String lcql = cql.toLowerCase();
+		if (lcql.startsWith("drop") || lcql.startsWith("create") || lcql.startsWith("alter")) {
+			Metadata metadata = cluster.getMetadata();
+			if (!rs.getExecutionInfo().isSchemaInAgreement()) {
+				while (!metadata.checkSchemaAgreement()) {
+					logger.info("Schema isn't in agreement, sleep 1 second...");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+				}
+			}
+		}
+
 	}
 
 	void sleep(int i) {
