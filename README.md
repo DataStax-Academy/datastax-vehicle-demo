@@ -12,8 +12,7 @@ The application:
 
 This version of code works with DSE 6.7 and above. For instructions on setup for DSE 5.1 & 6.0, check the `code-optimizations-5.1-and-6.0` branch.
 
-To specify contact points use the contactPoints command line parameter e.g. `-DcontactPoints=192.168.25.100,192.168.25.101`
-The contact points can take mulitple points in the IP,IP,IP (no spaces).
+To specify contact points use the `contactPoints` command line parameter, e.g. `-DcontactPoints=192.168.25.100,192.168.25.101`. The contact points can take mulitple points in the IP,IP,IP (no spaces) (default is `localhost`).
  
 To create the schema & search indices, run the following:
 
@@ -62,7 +61,7 @@ If you have created the core on the vehicle table as well, you can run a query t
 
 To remove the tables and the schema, run the following.
 
-    mvn clean compile exec:java -Dexec.mainClass="com.datastax.demo.SchemaTeardown"
+    mvn clean compile exec:java -Dexec.mainClass="com.datastax.demo.SchemaTeardown" -DcontactPoints=localhost
     
     
 ## Generation of heatmaps of vehicle locations
