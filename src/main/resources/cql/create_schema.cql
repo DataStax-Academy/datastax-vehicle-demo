@@ -11,7 +11,8 @@ create table if not exists current_location (
 	speed double,
 	temperature double,
 	p_ map<text,double>
-) WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+) WITH compaction = { 'class' :  'LeveledCompactionStrategy'  }
+  AND nodesync = {'enabled': 'true'};
 
 CREATE SEARCH INDEX ON current_location;
 
@@ -30,7 +31,8 @@ create table if not exists vehicle(
 	temperature double,
         p_ map<text,double>,
 	PRIMARY KEY ((vehicle,day), date)
-) with clustering order by (date desc);
+) with clustering order by (date desc)
+  AND nodesync = {'enabled': 'true'};
 
 CREATE SEARCH INDEX ON vehicle;
 
@@ -45,4 +47,5 @@ create table if not exists vehicle_status (
     state_change_time timestamp,
     vehicle_state text,
     PRIMARY KEY ((vehicle, day), state_change_time)
-) with clustering order by (state_change_time desc);
+) with clustering order by (state_change_time desc)
+  AND nodesync = {'enabled': 'true'};
